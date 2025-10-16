@@ -12,7 +12,7 @@ endif()
 project ("Rasterizer")
 
 # Add source to this project's executable.
-add_executable (Rasterizer WIN32 "src/main.cpp"   "include/MainWindow.h" "src/MainWindow.cpp" "src/Graphics.cpp" "include/Engine.h" "src/Engine.cpp" "include/Color.h"  "src/Graphics.cpp")
+add_executable (Rasterizer WIN32 "src/main.cpp"   "include/MainWindow.h" "src/MainWindow.cpp" "src/Graphics.cpp" "include/Engine.h" "src/Engine.cpp" "include/Color.h"  "src/Graphics.cpp" "include/Vector2.h")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Rasterizer PROPERTY CXX_STANDARD 20)
