@@ -3,48 +3,48 @@
 #include <cmath>
 
 template<typename T>
-class Vector2
+class Vector2_
 {
 public:
 	T x;
 	T y;
 private:
 public:
-	Vector2() 
+	Vector2_() 
 		: x( 0 ), y( 0 ) 
 	{}
-	Vector2( T x, T y )
+	Vector2_( T x, T y )
 		: x( x ), y( y )
 	{}
-	Vector2 operator+( const Vector2& rhs ) const
+	Vector2_ operator+( const Vector2_& rhs ) const
 	{
-		return Vector2( x + rhs.x, y + rhs.y );
+		return Vector2_( x + rhs.x, y + rhs.y );
 	}
-	Vector2 operator+=( const Vector2& rhs )
+	Vector2_ operator+=( const Vector2_& rhs )
 	{
 		return *this = *this + rhs;
 	}
-	Vector2 operator-( const Vector2& rhs ) const
+	Vector2_ operator-( const Vector2_& rhs ) const
 	{
-		return Vector2( x - rhs.x, y - rhs.y );
+		return Vector2_( x - rhs.x, y - rhs.y );
 	}
-	Vector2 operator-=( const Vector2& rhs )
+	Vector2_ operator-=( const Vector2_& rhs )
 	{
 		return *this = *this - rhs;
 	}
-	Vector2 operator*( const T rhs ) const
+	Vector2_ operator*( const T rhs ) const
 	{
-		return Vector2( x * rhs, y * rhs );
+		return Vector2_( x * rhs, y * rhs );
 	}
-	Vector2 operator*=( const T rhs )
+	Vector2_ operator*=( const T rhs )
 	{
 		return *this = *this * rhs;
 	}
-	Vector2 operator/( const T rhs ) const
+	Vector2_ operator/( const T rhs ) const
 	{
-		return Vector2( x / rhs, y / rhs );
+		return Vector2_( x / rhs, y / rhs );
 	}
-	Vector2 operator/=( const T rhs )
+	Vector2_ operator/=( const T rhs )
 	{
 		return *this = *this / rhs;
 	}
@@ -56,7 +56,7 @@ public:
 	{
 		return (T)std::sqrt( GetLengthSq() );
 	}
-	Vector2 GetNormalised() const
+	Vector2_ GetNormalised() const
 	{
 		const T length = GetLength();
 		if ( length != (T)0 )
@@ -65,11 +65,11 @@ public:
 		}
 		return *this;
 	}
-	Vector2& Normalise() 
+	Vector2_& Normalise() 
 	{
 		return *this = GetNormalised();
 	}
 private:
 };
 
-typedef Vector2<float> Vector2;
+typedef Vector2_<float> Vector2;
