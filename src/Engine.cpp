@@ -9,7 +9,7 @@ Engine::Engine( MainWindow& wnd )
 
 }
 
-void Engine::Go()
+void Engine::Start()
 {
 	gfx.BeginFrame();
 	Update();

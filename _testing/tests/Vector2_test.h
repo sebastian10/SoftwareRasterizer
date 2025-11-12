@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../TestRunner.h"
-#include "../../include/Vector2.h"
+#include "Vector2.h"
 
 namespace Testing::Tests::Vector2_test
 {

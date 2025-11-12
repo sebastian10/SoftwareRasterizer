@@ -1,21 +1,47 @@
-﻿# CMakeList.txt : CMake project for Rasterizer, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required(VERSION 3.8)
+project("Rasterizer")
 
-# Enable Hot Reload for MSVC compilers if supported.
+# Enable Hot Reload for MSVC compilers if supported
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
+    "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,\
+    $<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,\
+    $<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("Rasterizer")
+# Require C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add source to this project's executable.
-add_executable (Rasterizer WIN32 "src/main.cpp"   "include/MainWindow.h" "src/MainWindow.cpp" "src/Graphics.cpp" "include/Engine.h" "src/Engine.cpp" "include/Color.h"  "src/Graphics.cpp" "include/Vector2.h" "_testing/TestRunner.cpp" "_testing/TestRunner.h" "_testing/tests/Vector2_test.h")
+# === Include directories ===
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET Rasterizer PROPERTY CXX_STANDARD 20)
-endif()
+# === Main application (Engine) ===
+add_executable(MyEngine WIN32
+    "src/main.cpp"
+    "include/MainWindow.h"
+    "src/MainWindow.cpp"
+    "src/Graphics.cpp"
+    "include/Engine.h"
+    "src/Engine.cpp"
+    "include/Color.h"
+    "include/maths/Vector2.h"
+)
 
-# TODO: Add tests and install targets if needed.
+target_include_directories(MyEngine PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+# === Test executable ===
+add_executable(Tests
+    "_testing/TestMain.cpp"
+    "_testing/TestRunner.cpp"
+    "_testing/TestRunner.h"
+    "_testing/tests/Vector2_test.h"
+    "include/maths/Vector2.h"
+)
+
+target_include_directories(Tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+# Optional: link Tests with MyEngine to reuse some implementation code
+# target_link_libraries(Tests PRIVATE MyEngine)

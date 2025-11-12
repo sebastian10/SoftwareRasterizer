@@ -11,7 +11,7 @@ private:
 	Graphics gfx;
 public:
 	Engine( MainWindow& wnd );
-	void Go();
+	void Start();
 private:
 	void Update();
 	void DrawFrame();
