@@ -21,16 +21,21 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 # === Main application (Engine) ===
 add_executable(MyEngine WIN32
     "src/main.cpp"
-    "include/MainWindow.h"
-    "src/MainWindow.cpp"
-    "src/Graphics.cpp"
-    "include/Engine.h"
-    "src/Engine.cpp"
+    "include/core/MainWindow.h"
+    "src/core/MainWindow.cpp"
+    "src/graphics/Graphics.cpp"
+    "include/core/Engine.h"
+    "src/core/Engine.cpp"
     "include/Color.h"
     "include/maths/Vector2.h"
-)
+ "include/maths/maths.h")
 
-target_include_directories(MyEngine PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(MyEngine PRIVATE 
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/include/core
+    ${CMAKE_SOURCE_DIR}/include/graphics
+    ${CMAKE_SOURCE_DIR}/include/maths
+)
 
 # === Test executable ===
 add_executable(Tests
@@ -39,7 +44,7 @@ add_executable(Tests
     "_testing/TestRunner.h"
     "_testing/tests/Vector2_test.h"
     "include/maths/Vector2.h"
-)
+ "include/maths/maths.h")
 
 target_include_directories(Tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
 

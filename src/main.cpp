@@ -4,6 +4,9 @@
 #include "MainWindow.h"
 #include "Engine.h"
 
+using Rasterizer::Core::Engine;
+using Rasterizer::Core::MainWindow;
+
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, INT )
 {
 	MainWindow wnd( hInstance );
