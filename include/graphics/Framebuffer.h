@@ -2,6 +2,7 @@
 
 #include "MainWindow.h"
 #include "Color.h"
+#include "Vector2.h"
 
 namespace Rasterizer::Graphics
 {
@@ -11,7 +12,7 @@ namespace Rasterizer::Graphics
 		Color*		Memory;
 	};
 
-	class Graphics
+	class Framebuffer
 	{
 	public:
 		static constexpr int ScreenWidth = 800;
@@ -20,13 +21,14 @@ namespace Rasterizer::Graphics
 		HWND m_hWnd;
 		ENGINE_BITMAP m_backBuffer;
 	public:
-		Graphics( const HWND& hWnd );
-		Graphics( const Graphics& ) = delete;
-		Graphics& operator=( const Graphics& ) = delete;
-		~Graphics();
+		Framebuffer( const HWND& hWnd );
+		Framebuffer( const Framebuffer& ) = delete;
+		Framebuffer& operator=( const Framebuffer& ) = delete;
+		~Framebuffer();
 		void BeginFrame();
 		void EndFrame();
 		void PutPixel( int x, int y, Color c );
+		void DrawLine( Vector2 start, Vector2 end, const Color colour );
 	private:
 	};
 }

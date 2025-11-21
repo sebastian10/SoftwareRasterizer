@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include "Graphics.h"
+#include "Framebuffer.h"
 
 namespace Rasterizer::Core
 {

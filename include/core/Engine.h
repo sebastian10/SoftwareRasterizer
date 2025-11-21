@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics.h"
+#include "Framebuffer.h"
 #include "MainWindow.h"
 
 namespace Rasterizer::Core
@@ -10,7 +10,7 @@ namespace Rasterizer::Core
 	public:
 	private:
 		MainWindow& wnd;
-		Rasterizer::Graphics::Graphics gfx;
+		Rasterizer::Graphics::Framebuffer framebuffer;
 	public:
 		Engine( MainWindow& wnd );
 		void Start();

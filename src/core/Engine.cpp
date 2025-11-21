@@ -6,17 +6,17 @@ namespace Rasterizer::Core
 	Engine::Engine( MainWindow& wnd )
 		:
 		wnd( wnd ),
-		gfx( wnd.GetHandle() )
+		framebuffer( wnd.GetHandle() )
 	{
 
 	}
 
 	void Engine::Start()
 	{
-		gfx.BeginFrame();
+		framebuffer.BeginFrame();
 		Update();
 		DrawFrame();
-		gfx.EndFrame();
+		framebuffer.EndFrame();
 	}
 
 	void Engine::Update()
@@ -26,12 +26,17 @@ namespace Rasterizer::Core
 
 	void Engine::DrawFrame()
 	{
-		for ( int x = 0; x < 100; x++ )
-		{
-			for ( int y = 0; y < 100; y++ )
-			{
-				gfx.PutPixel( x, y, Color( 255, 0, 255 ) );
-			}
-		}
+		int ax = 7, ay = 3;
+		int bx = 120, by = 370;
+		int cx = 620, cy = 530;
+
+		Vector2 a( 7, 3 );
+		Vector2 b( 120, 370 );
+		Vector2 c( 620, 530 );
+
+		framebuffer.DrawLine( a, b, Colors::Blue );
+		framebuffer.DrawLine( c, b, Colors::Green );
+		framebuffer.DrawLine( c, a, Colors::Yellow );
+		framebuffer.DrawLine( a, c, Colors::Red );
 	}
 }

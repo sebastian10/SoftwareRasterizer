@@ -23,7 +23,7 @@ add_executable(MyEngine WIN32
     "src/main.cpp"
     "include/core/MainWindow.h"
     "src/core/MainWindow.cpp"
-    "src/graphics/Graphics.cpp"
+    "src/graphics/Framebuffer.cpp"
     "include/core/Engine.h"
     "src/core/Engine.cpp"
     "include/Color.h"
