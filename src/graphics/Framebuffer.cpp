@@ -58,18 +58,35 @@ namespace Rasterizer::Graphics
 
 	void Framebuffer::DrawLine( Vector2 start, Vector2 end, const Color colour )
 	{
-		if ( start.x > end.x )
+		bool steep = std::abs( start.x - end.x ) < std::abs( start.y - end.y );
+		// transpose the image for steep lines
+		if ( steep ) 
 		{
-			Vector2 temp = start;
-			start = end;
-			end = temp;
+			std::swap( start.x, start.y );
+			std::swap( end.x, end.y );
+		}
+
+		// make it left-to-right
+		if ( start.x > end.x ) 
+		{
+			std::swap( start, end );
 		}
 		for ( int x = (int)start.x; x <= end.x; x++ )
 		{
 			float t = ( x - start.x ) / static_cast<float>( end.x - start.x );
 			int y = (int) std::round( start.y + t * ( end.y - start.y ) );
-			PutPixel( x, y, colour );
+
+			// if transposed: de-transpose
+			if ( steep )
+			{
+				PutPixel( y, x, colour );
+			}
+			else
+			{
+				PutPixel( x, y, colour );
+			}
 		}
+
 		//for ( float t = 0; t < 1; t+=0.001f )
 		//{
 		//	int x = (int)std::round( start.x + t * ( end.x - start.x ) );
