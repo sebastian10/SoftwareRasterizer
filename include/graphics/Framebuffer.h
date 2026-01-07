@@ -28,7 +28,11 @@ namespace Rasterizer::Graphics
 		void BeginFrame();
 		void EndFrame();
 		void PutPixel( int x, int y, Color c );
-		void DrawLine( Vector2 start, Vector2 end, const Color colour );
+		void DrawLine( Vector2Int start, Vector2Int end, const Color colour );
+		void DrawLine( Vector2 start, Vector2 end, const Color colour )
+		{
+			DrawLine( Vector2Int( start ), Vector2Int( end ), colour );
+		}
 	private:
 	};
 }

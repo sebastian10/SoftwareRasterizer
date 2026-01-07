@@ -17,6 +17,9 @@ public:
 	Vector2_( T x, T y )
 		: x( x ), y( y )
 	{}
+	Vector2_( const Vector2_<float>& other )
+		: x( (T) other.x ), y( (T) other.y )
+	{}
 	Vector2_ operator+( const Vector2_& rhs ) const
 	{
 		return Vector2_( x + rhs.x, y + rhs.y );
@@ -74,3 +77,4 @@ private:
 };
 
 typedef Vector2_<float> Vector2;
+typedef Vector2_<int> Vector2Int;
