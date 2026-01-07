@@ -28,7 +28,7 @@ add_executable(MyEngine WIN32
     "src/core/Engine.cpp"
     "include/Color.h"
     "include/maths/Vector2.h"
- "include/maths/maths.h")
+ "include/maths/maths.h" "include/core/FrameTimer.h" "src/core/FrameTimer.cpp")
 
 target_include_directories(MyEngine PRIVATE 
     ${CMAKE_SOURCE_DIR}/include
