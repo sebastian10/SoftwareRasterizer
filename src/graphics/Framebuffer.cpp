@@ -56,7 +56,7 @@ namespace Rasterizer::Graphics
 		m_backBuffer.Memory[y * Framebuffer::ScreenWidth + x] = c;
 	}
 
-	void Framebuffer::DrawLine( Vector2 start, Vector2 end, const Color colour )
+	void Framebuffer::DrawLine( Vector2Int start, Vector2Int end, const Color colour )
 	{
 		bool steep = std::abs( start.x - end.x ) < std::abs( start.y - end.y );
 		// transpose the image for steep lines
@@ -71,11 +71,12 @@ namespace Rasterizer::Graphics
 		{
 			std::swap( start, end );
 		}
+
+		int y = start.y;
+		int ierror = 0;
+
 		for ( int x = (int)start.x; x <= end.x; x++ )
 		{
-			float t = ( x - start.x ) / static_cast<float>( end.x - start.x );
-			int y = (int) std::round( start.y + t * ( end.y - start.y ) );
-
 			// if transposed: de-transpose
 			if ( steep )
 			{
@@ -85,13 +86,13 @@ namespace Rasterizer::Graphics
 			{
 				PutPixel( x, y, colour );
 			}
-		}
 
-		//for ( float t = 0; t < 1; t+=0.001f )
-		//{
-		//	int x = (int)std::round( start.x + t * ( end.x - start.x ) );
-		//	int y = (int)std::round( start.y + t * ( end.y - start.y ) );
-		//	PutPixel( x, y, colour );
-		//}
+			ierror += 2 * std::abs(end.y - start.y);
+			if ( ierror > ( end.x - start.x ) )
+			{
+				y += end.y > start.y ? 1 : -1;
+				ierror -= 2 * ( end.x - start.x );
+			}
+		}
 	}
 }

@@ -1,12 +1,14 @@
 
 #include "Engine.h"
+#include <random>
 
 namespace Rasterizer::Core
 {
 	Engine::Engine( MainWindow& wnd )
 		:
 		wnd( wnd ),
-		framebuffer( wnd.GetHandle() )
+		framebuffer( wnd.GetHandle() ),
+		ft()
 	{
 
 	}
@@ -38,5 +40,23 @@ namespace Rasterizer::Core
 		framebuffer.DrawLine( c, b, Colors::Green );
 		framebuffer.DrawLine( c, a, Colors::Yellow );
 		framebuffer.DrawLine( a, c, Colors::Red );
+
+
+		/*std::mt19937 rng( std::random_device{}( ) );
+		std::uniform_int_distribution<int> XDist( 0, Graphics::Framebuffer::ScreenWidth - 1 );
+		std::uniform_int_distribution<int> YDist( 0, Graphics::Framebuffer::ScreenHeight - 1 );
+
+		std::uniform_int_distribution<int> ColourDist( 0, 255 );
+
+		ft.Mark();
+		for ( int i = 0; i < 1000; i++ )
+		{
+			framebuffer.DrawLine( Vector2Int( XDist( rng ), YDist( rng ) ), 
+				Vector2( XDist( rng ), YDist( rng ) ), 
+				Colors::MakeRGB( ColourDist(rng), ColourDist(rng), ColourDist(rng) ) );
+		}
+		std::cout << ft.Mark();*/
+
+
 	}
 }
