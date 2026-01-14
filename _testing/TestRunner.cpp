@@ -33,7 +33,7 @@ namespace Testing
 			}
 		}
 
-		std::cout << "Summary: " << passedCount << "/" << m_tests.size() << " passed. \n";
+		std::cout << "\nSummary: " << passedCount << "/" << m_tests.size() << " passed. \n";
 	}
 
 	bool TestRunner::NearlyEqual( float a, float b, float eps )

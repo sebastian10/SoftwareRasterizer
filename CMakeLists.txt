@@ -28,7 +28,7 @@ add_executable(MyEngine WIN32
     "src/core/Engine.cpp"
     "include/Color.h"
     "include/maths/Vector2.h"
- "include/maths/maths.h" "include/core/FrameTimer.h" "src/core/FrameTimer.cpp")
+ "include/maths/maths.h" "include/core/FrameTimer.h" "src/core/FrameTimer.cpp" "include/maths/Vector3.h" "_testing/tests/Vector3_test.h")
 
 target_include_directories(MyEngine PRIVATE 
     ${CMAKE_SOURCE_DIR}/include
@@ -44,9 +44,12 @@ add_executable(Tests
     "_testing/TestRunner.h"
     "_testing/tests/Vector2_test.h"
     "include/maths/Vector2.h"
- "include/maths/maths.h")
+ "include/maths/maths.h" "include/maths/Vector3.h" "_testing/tests/Vector3_test.h")
 
-target_include_directories(Tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(Tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/include/maths
+)
 
 # Optional: link Tests with MyEngine to reuse some implementation code
 # target_link_libraries(Tests PRIVATE MyEngine)
