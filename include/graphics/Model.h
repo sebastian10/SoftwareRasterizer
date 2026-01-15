@@ -10,12 +10,14 @@ namespace Rasterizer::Graphics
 	{
 	public:
 	private:
-		std::vector<Vector3> m_vertices;
-		std::vector<int> m_face_verts;
+		std::vector<Vector3> m_vertices = {};
+		std::vector<int> m_vertex_indices = {};
 	public:
 		Model( const std::string& filename );
 		int VertexCount() const;
 		int FaceCount() const;
+		Vector3 GetVertex( const int index ) const;
+		Vector3 GetVertex( const int faceIndex, const int vertexIndex ) const;
 	private:
 	};
 }

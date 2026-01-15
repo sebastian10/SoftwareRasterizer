@@ -11,7 +11,7 @@ public:
 private:
 public:
 	Vector2_()
-		: x( 0.0f ), y( 0.0f )
+		: x( (T)0.0f ), y( (T)0.0f )
 	{
 	}
 	Vector2_( T x, T y )

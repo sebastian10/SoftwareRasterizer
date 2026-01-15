@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <assert.h>
 
 #include "graphics/Model.h"
 
@@ -41,10 +42,10 @@ namespace Rasterizer::Graphics
 				iss >> trash;
 				while ( iss >> f >> trash >> t >> trash >> n )
 				{
-					m_face_verts.emplace_back( --f );
+					m_vertex_indices.emplace_back( --f );
 				}
 
-				if ( m_face_verts.size() % 3 != 0 )
+				if ( m_vertex_indices.size() % 3 != 0 )
 				{
 					std::cerr << "[ERROR] Non-triangle face detected\n";
 				}
@@ -61,6 +62,22 @@ namespace Rasterizer::Graphics
 
 	int Model::FaceCount() const
 	{
-		return m_face_verts.size();
+		return m_vertex_indices.size() / 3;
+	}
+
+	Vector3 Model::GetVertex( const int index ) const
+	{
+		assert( index >= 0 );
+		assert( index < m_vertices.size() );
+		return m_vertices[index];
+	}
+
+	Vector3 Model::GetVertex( const int faceIndex, const int vertexIndex ) const
+	{
+		assert( faceIndex >= 0 );
+		assert( faceIndex < FaceCount() );
+		assert( vertexIndex >= 0 );
+		assert( vertexIndex < 3 );
+		return m_vertices[m_vertex_indices[faceIndex * 3 + vertexIndex]];
 	}
 }

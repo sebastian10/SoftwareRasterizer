@@ -1,7 +1,8 @@
 
 #include "MainWindow.h"
+#include "Renderer.h"
 
-using Rasterizer::Graphics::Framebuffer;
+using Rasterizer::Graphics::Renderer;
 
 namespace Rasterizer::Core
 {
@@ -30,7 +31,7 @@ namespace Rasterizer::Core
             WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,            // Window style
 
             // Size and position
-            CW_USEDEFAULT, CW_USEDEFAULT, Framebuffer::ScreenWidth, Framebuffer::ScreenHeight,
+            CW_USEDEFAULT, CW_USEDEFAULT, Renderer::ScreenWidth, Renderer::ScreenHeight,
 
             NULL,       // Parent window    
             NULL,       // Menu

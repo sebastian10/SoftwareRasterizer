@@ -1,5 +1,6 @@
 
 #include "Framebuffer.h"
+#include "Renderer.h"
 #include <assert.h>
 
 namespace Rasterizer::Graphics
@@ -9,15 +10,15 @@ namespace Rasterizer::Graphics
 		m_hWnd( hWnd )
 	{
 		m_backBuffer.BitmapInfo.bmiHeader.biSize = sizeof( m_backBuffer.BitmapInfo.bmiHeader );
-		m_backBuffer.BitmapInfo.bmiHeader.biWidth = Framebuffer::ScreenWidth;
-		m_backBuffer.BitmapInfo.bmiHeader.biHeight = -Framebuffer::ScreenHeight; // negative so it's not upside down
+		m_backBuffer.BitmapInfo.bmiHeader.biWidth = Renderer::ScreenWidth;
+		m_backBuffer.BitmapInfo.bmiHeader.biHeight = -Renderer::ScreenHeight; // negative so it's not upside down
 		m_backBuffer.BitmapInfo.bmiHeader.biPlanes = 1;
 		m_backBuffer.BitmapInfo.bmiHeader.biBitCount = 32;
 		m_backBuffer.BitmapInfo.bmiHeader.biCompression = BI_RGB;
 
 		// allocate memory for buffer (16-byte aligned for faster access)
 		m_backBuffer.Memory = reinterpret_cast<Color*>(
-			_aligned_malloc( sizeof( Color ) * Framebuffer::ScreenWidth * Framebuffer::ScreenHeight, 16u ) );
+			_aligned_malloc( sizeof( Color ) * Renderer::ScreenWidth * Renderer::ScreenHeight, 16u ) );
 	}
 
 	Framebuffer::~Framebuffer()
@@ -29,19 +30,19 @@ namespace Rasterizer::Graphics
 		}
 	}
 
-	void Framebuffer::BeginFrame()
+	void Framebuffer::Flush()
 	{
-		memset( m_backBuffer.Memory, 0u, sizeof( Color ) * Framebuffer::ScreenHeight * Framebuffer::ScreenWidth );
+		memset( m_backBuffer.Memory, 0u, sizeof( Color ) * Renderer::ScreenHeight * Renderer::ScreenWidth );
 	}
 
-	void Framebuffer::EndFrame()
+	void Framebuffer::Display()
 	{
 		HDC deviceContext = GetDC( m_hWnd );
 
 		StretchDIBits(
 			deviceContext,
-			0, 0, Framebuffer::ScreenWidth, Framebuffer::ScreenHeight,
-			0, 0, Framebuffer::ScreenWidth, Framebuffer::ScreenHeight,
+			0, 0, Renderer::ScreenWidth, Renderer::ScreenHeight,
+			0, 0, Renderer::ScreenWidth, Renderer::ScreenHeight,
 			m_backBuffer.Memory, &m_backBuffer.BitmapInfo, DIB_RGB_COLORS, SRCCOPY );
 
 		ReleaseDC( m_hWnd, deviceContext );
@@ -50,49 +51,9 @@ namespace Rasterizer::Graphics
 	void Framebuffer::PutPixel( int x, int y, Color c )
 	{
 		assert( x >= 0 );
-		assert( x < Framebuffer::ScreenWidth );
+		assert( x < Renderer::ScreenWidth );
 		assert( y >= 0 );
-		assert( y < Framebuffer::ScreenHeight );
-		m_backBuffer.Memory[y * Framebuffer::ScreenWidth + x] = c;
-	}
-
-	void Framebuffer::DrawLine( Vector2Int start, Vector2Int end, const Color colour )
-	{
-		bool steep = std::abs( start.x - end.x ) < std::abs( start.y - end.y );
-		// transpose the image for steep lines
-		if ( steep ) 
-		{
-			std::swap( start.x, start.y );
-			std::swap( end.x, end.y );
-		}
-
-		// make it left-to-right
-		if ( start.x > end.x ) 
-		{
-			std::swap( start, end );
-		}
-
-		int y = start.y;
-		int ierror = 0;
-
-		for ( int x = (int)start.x; x <= end.x; x++ )
-		{
-			// if transposed: de-transpose
-			if ( steep )
-			{
-				PutPixel( y, x, colour );
-			}
-			else
-			{
-				PutPixel( x, y, colour );
-			}
-
-			ierror += 2 * std::abs(end.y - start.y);
-			if ( ierror > ( end.x - start.x ) )
-			{
-				y += end.y > start.y ? 1 : -1;
-				ierror -= 2 * ( end.x - start.x );
-			}
-		}
+		assert( y < Renderer::ScreenHeight );
+		m_backBuffer.Memory[y * Renderer::ScreenWidth + x] = c;
 	}
 }

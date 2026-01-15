@@ -15,8 +15,6 @@ namespace Rasterizer::Graphics
 	class Framebuffer
 	{
 	public:
-		static constexpr int ScreenWidth = 800;
-		static constexpr int ScreenHeight = 600;
 	private:
 		HWND m_hWnd;
 		ENGINE_BITMAP m_backBuffer;
@@ -25,14 +23,9 @@ namespace Rasterizer::Graphics
 		Framebuffer( const Framebuffer& ) = delete;
 		Framebuffer& operator=( const Framebuffer& ) = delete;
 		~Framebuffer();
-		void BeginFrame();
-		void EndFrame();
+		void Flush();
+		void Display();
 		void PutPixel( int x, int y, Color c );
-		void DrawLine( Vector2Int start, Vector2Int end, const Color colour );
-		void DrawLine( Vector2 start, Vector2 end, const Color colour )
-		{
-			DrawLine( Vector2Int( start ), Vector2Int( end ), colour );
-		}
 	private:
 	};
 }

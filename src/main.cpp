@@ -9,10 +9,10 @@ using Rasterizer::Core::MainWindow;
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, INT )
 {
-	MainWindow wnd( hInstance );
+	MainWindow m_wnd( hInstance );
 
-	Engine engine( wnd );
-	while ( wnd.ProcessMessage() )
+	Engine engine( m_wnd );
+	while ( m_wnd.ProcessMessage() )
 	{
 		engine.Start();
 	}

@@ -2,6 +2,7 @@
 
 #include "Framebuffer.h"
 #include "MainWindow.h"
+#include "Renderer.h"
 #include "FrameTimer.h"
 #include "graphics/Model.h"
 
@@ -13,8 +14,8 @@ namespace Rasterizer::Core
 		FrameTimer ft;
 		Rasterizer::Graphics::Model model;
 	private:
-		MainWindow& wnd;
-		Rasterizer::Graphics::Framebuffer framebuffer;
+		MainWindow& m_wnd;
+		Rasterizer::Graphics::Renderer m_renderer;
 	public:
 		Engine( MainWindow& wnd );
 		void Start();
