@@ -8,7 +8,8 @@ namespace Rasterizer::Core
 		:
 		wnd( wnd ),
 		framebuffer( wnd.GetHandle() ),
-		ft()
+		ft(),
+		model( "../assets/diablo3_pose.obj" )
 	{
 
 	}
