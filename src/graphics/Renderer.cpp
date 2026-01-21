@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <algorithm>
 
+#include <random>
+
 namespace Rasterizer::Graphics
 {
 	Renderer::Renderer( const HWND& hWnd )
@@ -96,24 +98,80 @@ namespace Rasterizer::Graphics
 
 			for ( int x = x_start; x <= x_end; x++ )
 			{
+				if ( x < 0 || x >= ScreenWidth || y < 0 || y >= ScreenHeight )
+					continue;
+
 				m_framebuffer.PutPixel( x, y, colour );
 			}
 		}
 	}
 
-	void Renderer::DrawTriangle( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour )
+	void Renderer::DrawTriangle( const Vector3& a, const Vector3& b, const Vector3& c, const Color colour )
+	{
+		int top = (int) min( min( a.y, b.y ), c.y );
+		int bottom = (int) max( max( a.y, b.y ), c.y );
+		int left = (int) min( min( a.x, b.x ), c.x );
+		int right = (int) max( max( a.x, b.x ), c.x );
+
+		auto Edge = []( const Vector3& a, const Vector3& b, const Vector3& p )
+		{
+			return ( b - a ).Cross( p - a );
+		};
+
+		float area = Edge( a, b, c ).z;
+		if ( area == 0 ) // degenerate triangle
+			return;
+
+		for ( int y = top; y < bottom; y++ )
+		{
+			for ( int x = left; x < right; x++ )
+			{
+				Vector3 p( (float) x, (float) y, 0 );
+				float alpha = Edge( a, b, p).z / area;
+				float beta = Edge( b, c, p ).z / area;
+				float gamma = Edge( c, a, p ).z / area;
+
+				if ( alpha < 0 || beta < 0 || gamma < 0 )
+					continue;
+
+				m_framebuffer.PutPixel( x, y, colour );
+			}
+		}
+	}
+
+	void Renderer::DrawTriangle( const Vector2Int& a, const Vector2Int& b, const Vector2Int& c, const Color colour )
 	{
 		int top = min( min( a.y, b.y ), c.y );
 		int bottom = max( max( a.y, b.y ), c.y );
 		int left = min( min( a.x, b.x ), c.x );
 		int right = max( max( a.x, b.x ), c.x );
 
-		Shapes::Rectangle boundingRect( top, right, bottom, left );
+		auto Edge = []( const Vector2Int& a, const Vector2Int& b, const Vector2Int& p )
+		{
+			Vector3Int a_int = Vector3Int( a );
+			Vector3Int b_int = Vector3Int( b );
+			Vector3Int p_int = Vector3Int( p );
 
+			return ( b_int - a_int ).Cross( p_int - a_int ).z;
+		};
+
+		int area = Edge( a, b, c );
+		if ( area == 0 ) // degenerate triangle
+			return;
+
+		#pragma omp parallel for
 		for ( int y = top; y < bottom; y++ )
 		{
 			for ( int x = left; x < right; x++ )
 			{
+				Vector2Int p( x, y );
+				float alpha = (float) Edge( a, b, p ) / area;
+				float beta = (float) Edge( b, c, p ) / area;
+				float gamma = (float) Edge( c, a, p ) / area;
+
+				if ( alpha < 0 || beta < 0 || gamma < 0 )
+					continue;
+
 				m_framebuffer.PutPixel( x, y, colour );
 			}
 		}
@@ -148,11 +206,34 @@ namespace Rasterizer::Graphics
 		}
 	}
 
+	void Renderer::DrawModel( const Model& model, const Color colour )
+	{
+		std::mt19937 rng( std::random_device{}() );
+		std::uniform_int_distribution<int> colorDist( 0, 255 );
+
+		for ( int i = 0; i < model.FaceCount(); i++ )
+		{
+			Vector2Int a = Project( model.GetVertex( i, 0 ) );
+			Vector2Int b = Project( model.GetVertex( i, 1 ) );
+			Vector2Int c = Project( model.GetVertex( i, 2 ) );
+
+			DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
+			//DrawTriangle( a, b, c, colour );
+		}
+	}
+
 	Vector2Int Renderer::Project( const Vector3& v ) const
 	{
 		// from [-1, 1], to [0, ScreenWidth/ScreenHeight)
-		int x = (int) ( ( v.x + 1.0f ) * 0.5f * ( ScreenWidth - 1 ) );
-		int y = (int) ( ( v.y + 1.0f ) * 0.5f * ( ScreenHeight - 1 ) );
+		float scaleX = ( ScreenWidth - 1 ) * 0.5f;
+		float scaleY = ( ScreenHeight - 1 ) * 0.5f;
+		float scale = min( scaleX, scaleY );
+
+		float offsetX = ScreenWidth * 0.5f;
+		float offsetY = ScreenHeight * 0.5f;
+
+		int x = (int) ( ( v.x ) * scale + offsetX );
+		int y = (int) ( ( v.y ) * scale + offsetY );
 
 		// std::cout << "Original: " << v.x << ", " << v.y << " Projection: " << x << ", " << y << std::endl;
 

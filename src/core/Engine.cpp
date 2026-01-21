@@ -9,8 +9,8 @@ namespace Rasterizer::Core
 		m_wnd( m_wnd ),
 		m_renderer( m_wnd.GetHandle() ),
 		ft(),
-		model( "../assets/diablo3_pose.obj" )
-		//model( "../assets/african_head.obj" )
+		//model( "../assets/diablo3_pose.obj" )
+		model( "../assets/african_head.obj" )
 	{
 
 	}
@@ -32,12 +32,14 @@ namespace Rasterizer::Core
 	{
 		//m_renderer.DrawWireframe( model, Colors::Red );
 
-		/*m_renderer.DrawTriangleScanline( Vector2Int( 7, 45 ), Vector2Int( 35, 100 ), Vector2Int( 45, 60 ), Colors::Red );
-		m_renderer.DrawTriangleScanline( Vector2Int( 120, 35 ), Vector2Int( 90, 5 ), Vector2Int( 45, 110 ), Colors::White );
-		m_renderer.DrawTriangleScanline( Vector2Int( 115, 83 ), Vector2Int( 80, 90 ), Vector2Int( 85, 120 ), Colors::Green );*/
+		//m_renderer.DrawTriangleScanline( Vector2Int( 7, 45 ), Vector2Int( 35, 100 ), Vector2Int( 45, 60 ), Colors::Red );
+		//m_renderer.DrawTriangleScanline( Vector2Int( 120, 35 ), Vector2Int( 90, 5 ), Vector2Int( 45, 110 ), Colors::White );
+		//m_renderer.DrawTriangleScanline( Vector2Int( 115, 83 ), Vector2Int( 80, 90 ), Vector2Int( 85, 120 ), Colors::Green );
 
-		m_renderer.DrawTriangle( Vector2Int( 7, 45 ), Vector2Int( 35, 100 ), Vector2Int( 45, 60 ), Colors::Red );
-		m_renderer.DrawTriangle( Vector2Int( 120, 35 ), Vector2Int( 90, 5 ), Vector2Int( 45, 110 ), Colors::White );
-		m_renderer.DrawTriangle( Vector2Int( 115, 83 ), Vector2Int( 80, 90 ), Vector2Int( 85, 120 ), Colors::Green );
+		/*m_renderer.DrawTriangle( Vector2( 7.0f, 45.0f ), Vector2( 35.0f, 100.0f ), Vector2( 45.0f, 60.0f ), Colors::Red );
+		m_renderer.DrawTriangle( Vector2( 120.0f, 35.0f ), Vector2( 90.0f, 5.0f ), Vector2( 45.0f, 110.0f ), Colors::White );
+		m_renderer.DrawTriangle( Vector2( 115.0f, 83.0f ), Vector2( 80.0f, 90.0f ), Vector2( 85.0f, 120.0f ), Colors::Green );*/
+
+		m_renderer.DrawModel( model, Colors::Red );
 	}
 }

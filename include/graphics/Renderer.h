@@ -30,10 +30,12 @@ namespace Rasterizer::Graphics
 		// Scanline rasterization
 		void DrawTriangleScanline( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour );
 		// Barycentric coordinates
-		void DrawTriangle( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour );
+		void DrawTriangle( const Vector3& a, const Vector3& b, const Vector3& c, const Color colour );
+		void DrawTriangle( const Vector2Int& a, const Vector2Int& b, const Vector2Int& c, const Color colour );
 
 		// Model
 		void DrawWireframe( const Model& model, const Color colour );
+		void DrawModel( const Model& model, const Color colour );
 	private:
 		Vector2Int Project ( const Vector3& v ) const;
 		int Intersect ( Vector2Int v0, Vector2Int v1, int step ) const;
