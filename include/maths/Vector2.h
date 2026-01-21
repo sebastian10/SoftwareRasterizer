@@ -20,6 +20,10 @@ public:
 	Vector2_( const Vector2_<float>& other )
 		: x( (T) other.x ), y( (T) other.y )
 	{}
+	bool operator==( const Vector2_& rhs ) const
+	{
+		return ( x == rhs.x && y == rhs.y );
+	}
 	Vector2_ operator+( const Vector2_& rhs ) const
 	{
 		return Vector2_( x + rhs.x, y + rhs.y );
@@ -27,6 +31,10 @@ public:
 	Vector2_ operator+=( const Vector2_& rhs )
 	{
 		return *this = *this + rhs;
+	}
+	Vector2_ operator-() const
+	{
+		return Vector2_( -x, -y );
 	}
 	Vector2_ operator-( const Vector2_& rhs ) const
 	{

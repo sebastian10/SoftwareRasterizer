@@ -14,6 +14,14 @@ namespace Testing::Tests::Vector2_test
 		CHECK( v2.x == 3.0f && v2.y == 12.0f );
 	}
 
+	void Comparison_Test()
+	{
+		Vector2 v1( 3.0f, 3.0f ), v2( 1.0f, 1.0f ), v3( 3.0f, 3.0f );
+
+		CHECK( !( v1 == v2 ) );
+		CHECK( v1 == v3 );
+	}
+
 	void Addition_Test()
 	{
 		Vector2 v1( 3.0f, 3.0f ), v2( 1.0f, 1.0f );
