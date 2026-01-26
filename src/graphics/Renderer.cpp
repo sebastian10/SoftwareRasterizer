@@ -10,7 +10,8 @@ namespace Rasterizer::Graphics
 {
 	Renderer::Renderer( const HWND& hWnd )
 		:
-		m_framebuffer( hWnd )
+		m_framebuffer( hWnd ),
+		m_depthbuffer( ScreenWidth, ScreenHeight )
 	{
 
 	}
@@ -22,6 +23,7 @@ namespace Rasterizer::Graphics
 
 	void Renderer::EndFrame()
 	{
+		m_framebuffer.VisualiseDepth( m_depthbuffer );
 		m_framebuffer.Display();
 	}
 
@@ -106,47 +108,14 @@ namespace Rasterizer::Graphics
 		}
 	}
 
-	void Renderer::DrawTriangle( const Vector3& a, const Vector3& b, const Vector3& c, const Color colour )
-	{
-		int top = (int) min( min( a.y, b.y ), c.y );
-		int bottom = (int) max( max( a.y, b.y ), c.y );
-		int left = (int) min( min( a.x, b.x ), c.x );
-		int right = (int) max( max( a.x, b.x ), c.x );
-
-		auto Edge = []( const Vector3& a, const Vector3& b, const Vector3& p )
-		{
-			return ( b - a ).Cross( p - a );
-		};
-
-		float area = Edge( a, b, c ).z;
-		if ( area == 0 ) // degenerate triangle
-			return;
-
-		for ( int y = top; y < bottom; y++ )
-		{
-			for ( int x = left; x < right; x++ )
-			{
-				Vector3 p( (float) x, (float) y, 0 );
-				float alpha = Edge( a, b, p).z / area;
-				float beta = Edge( b, c, p ).z / area;
-				float gamma = Edge( c, a, p ).z / area;
-
-				if ( alpha < 0 || beta < 0 || gamma < 0 )
-					continue;
-
-				m_framebuffer.PutPixel( x, y, colour );
-			}
-		}
-	}
-
-	void Renderer::DrawTriangle( const Vector2Int& a, const Vector2Int& b, const Vector2Int& c, const Color colour )
+	void Renderer::DrawTriangle( const Vector3Int& a, const Vector3Int& b, const Vector3Int& c, const Color colour )
 	{
 		int top = min( min( a.y, b.y ), c.y );
 		int bottom = max( max( a.y, b.y ), c.y );
 		int left = min( min( a.x, b.x ), c.x );
 		int right = max( max( a.x, b.x ), c.x );
 
-		auto Edge = []( const Vector2Int& a, const Vector2Int& b, const Vector2Int& p )
+		auto Edge = []( const Vector3Int& a, const Vector3Int& b, const Vector3Int& p )
 		{
 			Vector3Int a_int = Vector3Int( a );
 			Vector3Int b_int = Vector3Int( b );
@@ -156,7 +125,7 @@ namespace Rasterizer::Graphics
 		};
 
 		int area = Edge( a, b, c );
-		if ( area == 0 ) // degenerate triangle
+		if ( area >= 0 ) // positive area pointing backwards
 			return;
 
 		#pragma omp parallel for
@@ -171,7 +140,10 @@ namespace Rasterizer::Graphics
 
 				if ( alpha < 0 || beta < 0 || gamma < 0 )
 					continue;
+				
+				unsigned char depth = static_cast<unsigned char>( alpha * a.z + beta * b.z + gamma * c.z );
 
+				m_depthbuffer.Set( x, y, depth );
 				m_framebuffer.PutPixel( x, y, colour );
 			}
 		}
@@ -183,25 +155,25 @@ namespace Rasterizer::Graphics
 		{
 			for ( int point = 0; point < 3; point++ )
 			{
-				Vector2Int start( Project( model.GetVertex( i, point ) ) );
-				Vector2Int end = {};
+				Vector3Int start( Project( model.GetVertex( i, point ) ) );
+				Vector3Int end = {};
 
 				if ( point == 2 )
 				{
-					end = Vector2Int( Project( model.GetVertex( i, 0 ) ) );
+					end = Vector3Int( Project( model.GetVertex( i, 0 ) ) );
 				}
 				else
 				{
-					end = Vector2Int( Project( model.GetVertex( i, point + 1 ) ) );
+					end = Vector3Int( Project( model.GetVertex( i, point + 1 ) ) );
 				}
 
-				DrawLine( start, end, colour );
+				DrawLine( Vector2Int( start.x, start.y ), Vector2Int( end.x, end.y ), colour );
 			}
 		}
 
 		for ( int i = 0; i < model.VertexCount(); i++ )
 		{
-			Vector2Int vertex = Project( model.GetVertex( i ) );
+			Vector3Int vertex = Project( model.GetVertex( i ) );
 			m_framebuffer.PutPixel( vertex.x, vertex.y, Colors::White );
 		}
 	}
@@ -213,16 +185,16 @@ namespace Rasterizer::Graphics
 
 		for ( int i = 0; i < model.FaceCount(); i++ )
 		{
-			Vector2Int a = Project( model.GetVertex( i, 0 ) );
-			Vector2Int b = Project( model.GetVertex( i, 1 ) );
-			Vector2Int c = Project( model.GetVertex( i, 2 ) );
+			Vector3Int a( Project( model.GetVertex( i, 0 ) ) );
+			Vector3Int b( Project( model.GetVertex( i, 1 ) ) );
+			Vector3Int c( Project( model.GetVertex( i, 2 ) ) );
 
 			DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
 			//DrawTriangle( a, b, c, colour );
 		}
 	}
 
-	Vector2Int Renderer::Project( const Vector3& v ) const
+	Vector3Int Renderer::Project( const Vector3& v ) const
 	{
 		// from [-1, 1], to [0, ScreenWidth/ScreenHeight)
 		float scaleX = ( ScreenWidth - 1 ) * 0.5f;
@@ -234,11 +206,12 @@ namespace Rasterizer::Graphics
 
 		int x = (int) ( ( v.x ) * scale + offsetX );
 		int y = (int) ( ( v.y ) * scale + offsetY );
+		int z = (int) ( ( v.z + 1.0f ) * 255 * 0.5f ); // mapped to [0,255]
 
 		// std::cout << "Original: " << v.x << ", " << v.y << " Projection: " << x << ", " << y << std::endl;
 
 		// ScreenHeight - y because of inverted y direction
-		return Vector2Int( x, ScreenHeight - 1 - y );
+		return Vector3Int( x, ScreenHeight - 1 - y, z );
 	}
 
 	int Renderer::Intersect( Vector2Int v0, Vector2Int v1, int step ) const

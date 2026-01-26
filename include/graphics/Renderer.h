@@ -2,7 +2,13 @@
 
 #include "MainWindow.h"
 #include "Framebuffer.h"
+#include "Depthbuffer.h"
 #include "Model.h"
+
+// Coordinate conventions:
+// - Screen space Y increases downward
+// - Front-facing triangles have NEGATIVE signed area
+// - Backface culling uses: area >= 0
 
 namespace Rasterizer::Graphics
 {
@@ -13,11 +19,12 @@ namespace Rasterizer::Graphics
 		static constexpr int ScreenHeight = 800;
 	private:
 		Framebuffer m_framebuffer;
+		Depthbuffer m_depthbuffer;
 	public:
 		Renderer( const HWND& hWnd );
 		void BeginFrame();
 		void EndFrame();
-
+		
 		/*
 		 * Drawing
 		*/ 
@@ -30,14 +37,13 @@ namespace Rasterizer::Graphics
 		// Scanline rasterization
 		void DrawTriangleScanline( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour );
 		// Barycentric coordinates
-		void DrawTriangle( const Vector3& a, const Vector3& b, const Vector3& c, const Color colour );
-		void DrawTriangle( const Vector2Int& a, const Vector2Int& b, const Vector2Int& c, const Color colour );
+		void DrawTriangle( const Vector3Int& a, const Vector3Int& b, const Vector3Int& c, const Color colour );
 
 		// Model
 		void DrawWireframe( const Model& model, const Color colour );
 		void DrawModel( const Model& model, const Color colour );
 	private:
-		Vector2Int Project ( const Vector3& v ) const;
+		Vector3Int Project ( const Vector3& v ) const;
 		int Intersect ( Vector2Int v0, Vector2Int v1, int step ) const;
 	};
 }

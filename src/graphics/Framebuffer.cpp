@@ -56,4 +56,15 @@ namespace Rasterizer::Graphics
 		assert( y < Renderer::ScreenHeight );
 		m_backBuffer.Memory[y * Renderer::ScreenWidth + x] = c;
 	}
+
+	void Framebuffer::VisualiseDepth( const Depthbuffer& buffer )
+	{
+		for ( int y = 0; y < buffer.GetHeigth(); y++ )
+		{
+			for ( int x = 0; x < buffer.GetWidth(); x++ )
+			{
+				PutPixel( x, y, Colors::Grayscale( buffer.Get( x, y ) ) );
+			}
+		}
+	}
 }
