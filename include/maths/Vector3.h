@@ -13,7 +13,7 @@ public:
 private:
 public:
 	Vector3_()
-		: x( 0.0f ), y( 0.0f ), z( 0.0f )
+		: x( (T) 0.0f ), y( (T) 0.0f ), z( (T) 0.0f )
 	{
 	}
 	Vector3_( T x, T y, T z )

@@ -57,12 +57,12 @@ namespace Rasterizer::Graphics
 
 	int Model::VertexCount() const
 	{
-		return m_vertices.size();
+		return (int) m_vertices.size();
 	}
 
 	int Model::FaceCount() const
 	{
-		return m_vertex_indices.size() / 3;
+		return (int) m_vertex_indices.size() / 3;
 	}
 
 	Vector3 Model::GetVertex( const int index ) const
