@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <assert.h>
 #include "Vector2.h"
 
 template<typename T>

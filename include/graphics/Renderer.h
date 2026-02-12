@@ -42,6 +42,8 @@ namespace Rasterizer::Graphics
 		// Model
 		void DrawWireframe( const Model& model, const Color colour );
 		void DrawModel( const Model& model, const Color colour );
+
+		void VisualizeDepth();
 	private:
 		Vector3Int Project ( const Vector3& v ) const;
 		int Intersect ( Vector2Int v0, Vector2Int v1, int step ) const;

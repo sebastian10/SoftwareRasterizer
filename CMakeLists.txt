@@ -39,7 +39,7 @@ add_executable(MyEngine WIN32
     "include/graphics/shapes/Rectangle.h"  
     "include/graphics/Depthbuffer.h" 
     "src/graphics/Depthbuffer.cpp"
-)
+ "include/maths/Matrix.h" "include/maths/Vector.h")
 
 target_include_directories(MyEngine PRIVATE 
     ${CMAKE_SOURCE_DIR}/include
@@ -55,7 +55,7 @@ add_executable(Tests
     "_testing/TestRunner.h"
     "_testing/tests/Vector2_test.h"
     "include/maths/Vector2.h"
- "include/maths/maths.h" "include/maths/Vector3.h" "_testing/tests/Vector3_test.h")
+ "include/maths/maths.h" "include/maths/Vector3.h" "_testing/tests/Vector3_test.h" "include/maths/Matrix.h" "_testing/tests/Matrix_test.h" "include/maths/Vector.h" "_testing/tests/Vector_test.h")
 
 target_include_directories(Tests PRIVATE 
     ${CMAKE_SOURCE_DIR}/include

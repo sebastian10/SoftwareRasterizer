@@ -27,8 +27,6 @@ namespace Rasterizer::Graphics
 		void Flush();
 		void Display();
 		void PutPixel( int x, int y, Color c );
-
-		void VisualiseDepth( const Depthbuffer& buffer );
 	private:
 	};
 }

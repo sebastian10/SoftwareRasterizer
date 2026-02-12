@@ -23,7 +23,6 @@ namespace Rasterizer::Graphics
 
 	void Renderer::EndFrame()
 	{
-		m_framebuffer.VisualiseDepth( m_depthbuffer );
 		m_framebuffer.Display();
 	}
 
@@ -143,6 +142,9 @@ namespace Rasterizer::Graphics
 				
 				unsigned char depth = static_cast<unsigned char>( alpha * a.z + beta * b.z + gamma * c.z );
 
+				if ( depth <= m_depthbuffer.Get( x, y ) )
+					continue;
+
 				m_depthbuffer.Set( x, y, depth );
 				m_framebuffer.PutPixel( x, y, colour );
 			}
@@ -220,5 +222,18 @@ namespace Rasterizer::Graphics
 		float x = v0.x + t * ( v1.x - v0.x );
 
 		return (int)x;
+	}
+
+	void Renderer::VisualizeDepth()
+	{
+		for ( int y = 0; y < m_depthbuffer.GetHeigth(); y++ )
+		{
+			for ( int x = 0; x < m_depthbuffer.GetWidth(); x++ )
+			{
+				m_framebuffer.PutPixel( x, y, Colors::Grayscale( m_depthbuffer.Get( x, y ) ) );
+			}
+		}
+
+		
 	}
 }

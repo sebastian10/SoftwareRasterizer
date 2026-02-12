@@ -48,5 +48,6 @@ namespace Rasterizer::Core
 		//m_renderer.DrawTriangle( Vector2( 115.0f, 83.0f ), Vector2( 80.0f, 90.0f ), Vector2( 85.0f, 120.0f ), Colors::Green );
 
 		m_renderer.DrawModel( model, Colors::Red );
+		m_renderer.VisualizeDepth();
 	}
 }

@@ -20,6 +20,7 @@ public:
 	Vector2_( const Vector2_<float>& other )
 		: x( (T) other.x ), y( (T) other.y )
 	{}
+
 	bool operator==( const Vector2_& rhs ) const
 	{
 		return ( x == rhs.x && y == rhs.y );
