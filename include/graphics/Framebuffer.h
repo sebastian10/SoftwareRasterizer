@@ -2,7 +2,7 @@
 
 #include "MainWindow.h"
 #include "Color.h"
-#include "Vector2.h"
+#include "Vector.h"
 #include "Depthbuffer.h"
 
 namespace Rasterizer::Graphics

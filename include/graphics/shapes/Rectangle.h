@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include "../../maths/Vector2.h"
 
 namespace Rasterizer::Graphics::Shapes
 {

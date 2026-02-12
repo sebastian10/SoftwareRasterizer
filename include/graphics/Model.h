@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "../maths/Vector3.h"
+#include "../maths/Vector.h"
 
 namespace Rasterizer::Graphics
 {
@@ -10,14 +10,14 @@ namespace Rasterizer::Graphics
 	{
 	public:
 	private:
-		std::vector<Vector3> m_vertices = {};
+		std::vector<Vec3> m_vertices = {};
 		std::vector<int> m_vertex_indices = {};
 	public:
 		Model( const std::string& filename );
 		int VertexCount() const;
 		int FaceCount() const;
-		Vector3 GetVertex( const int index ) const;
-		Vector3 GetVertex( const int faceIndex, const int vertexIndex ) const;
+		Vec3 GetVertex( const int index ) const;
+		Vec3 GetVertex( const int faceIndex, const int vertexIndex ) const;
 	private:
 	};
 }

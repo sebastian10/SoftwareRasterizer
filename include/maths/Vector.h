@@ -31,6 +31,15 @@ public:
 		vec.fill( value );
 	}
 
+	template<typename U>
+	explicit Vec( const Vec<N, U>& other )
+	{
+		for ( int i = 0; i < N; i++ )
+		{
+			vec[i] = static_cast<T>( other[i] );
+		}
+	}
+
 	T& x() requires( N >= 1 ) { return vec[0]; }
 	T& y() requires( N >= 2 ) { return vec[1]; }
 	T& z() requires( N >= 3 ) { return vec[2]; }
@@ -178,7 +187,7 @@ public:
 	{
 		return Vec(
 			y() * rhs.z() - z() * rhs.y(),
-			z() * rhs.y() - y() * rhs.z(),
+			z() * rhs.x() - x() * rhs.z(),
 			x() * rhs.y() - y() * rhs.x()
 		);
 	}

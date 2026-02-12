@@ -26,26 +26,26 @@ namespace Rasterizer::Graphics
 		m_framebuffer.Display();
 	}
 
-	void Renderer::DrawLine( Vector2Int start, Vector2Int end, const Color colour )
+	void Renderer::DrawLine( Vei2 start, Vei2 end, const Color colour )
 	{
-		bool steep = std::abs( start.x - end.x ) < std::abs( start.y - end.y );
+		bool steep = std::abs( start.x() - end.x() ) < std::abs( start.y() - end.y() );
 		// transpose the image for steep lines
 		if ( steep )
 		{
-			std::swap( start.x, start.y );
-			std::swap( end.x, end.y );
+			std::swap( start.x(), start.y() );
+			std::swap( end.x(), end.y() );
 		}
 
 		// make it left-to-right
-		if ( start.x > end.x )
+		if ( start.x() > end.x() )
 		{
 			std::swap( start, end );
 		}
 
-		int y = start.y;
+		int y = start.y();
 		int ierror = 0;
 
-		for ( int x = (int) start.x; x <= end.x; x++ )
+		for ( int x = (int) start.x(); x <= end.x(); x++ )
 		{
 			// if transposed: de-transpose
 			if ( steep )
@@ -57,16 +57,16 @@ namespace Rasterizer::Graphics
 				m_framebuffer.PutPixel( x, y, colour );
 			}
 
-			ierror += 2 * std::abs( end.y - start.y );
-			if ( ierror > ( end.x - start.x ) )
+			ierror += 2 * std::abs( end.y() - start.y() );
+			if ( ierror > ( end.x() - start.x() ) )
 			{
-				y += end.y > start.y ? 1 : -1;
-				ierror -= 2 * ( end.x - start.x );
+				y += end.y() > start.y() ? 1 : -1;
+				ierror -= 2 * ( end.x() - start.x() );
 			}
 		}
 	}
 
-	void Renderer::DrawTriangleWireframe( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour )
+	void Renderer::DrawTriangleWireframe( Vei2 a, Vei2 b, Vei2 c, const Color colour )
 	{
 		DrawLine( a, b, colour );
 		DrawLine( b, c, colour );
@@ -74,20 +74,20 @@ namespace Rasterizer::Graphics
 	}
 
 	// Scanline rasterization
-	void Renderer::DrawTriangleScanline( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour )
+	void Renderer::DrawTriangleScanline( Vei2 a, Vei2 b, Vei2 c, const Color colour )
 	{
-		if ( a.y > b.y ) std::swap( a, b );
-		if ( a.y > c.y ) std::swap( a, c );
-		if ( b.y > c.y ) std::swap( b, c );
+		if ( a.y() > b.y() ) std::swap( a, b );
+		if ( a.y() > c.y() ) std::swap( a, c );
+		if ( b.y() > c.y() ) std::swap( b, c );
 
-		assert( a.y <= b.y && b.y <= c.y );
+		assert( a.y() <= b.y() && b.y() <= c.y() );
 
 		// Loop line by line
-		for ( int y = a.y; y <= c.y; y++ )
+		for ( int y = a.y(); y <= c.y(); y++ )
 		{
 			int x_short;
 			// Top half or bottom half
-			if ( y < b.y )
+			if ( y < b.y() )
 				x_short = Intersect( a, b, y );
 			else
 				x_short = Intersect( b, c, y );
@@ -107,20 +107,20 @@ namespace Rasterizer::Graphics
 		}
 	}
 
-	void Renderer::DrawTriangle( const Vector3Int& a, const Vector3Int& b, const Vector3Int& c, const Color colour )
+	void Renderer::DrawTriangle( const Vei3& a, const Vei3& b, const Vei3& c, const Color colour )
 	{
-		int top = min( min( a.y, b.y ), c.y );
-		int bottom = max( max( a.y, b.y ), c.y );
-		int left = min( min( a.x, b.x ), c.x );
-		int right = max( max( a.x, b.x ), c.x );
+		int top = min( min( a.y(), b.y() ), c.y() );
+		int bottom = max( max( a.y(), b.y() ), c.y() );
+		int left = min( min( a.x(), b.x() ), c.x() );
+		int right = max( max( a.x(), b.x() ), c.x() );
 
-		auto Edge = []( const Vector3Int& a, const Vector3Int& b, const Vector3Int& p )
+		auto Edge = []( const Vei3& a, const Vei3& b, const Vei3& p )
 		{
-			Vector3Int a_int = Vector3Int( a );
-			Vector3Int b_int = Vector3Int( b );
-			Vector3Int p_int = Vector3Int( p );
+			Vei3 a_int = Vei3( a );
+			Vei3 b_int = Vei3( b );
+			Vei3 p_int = Vei3( p );
 
-			return ( b_int - a_int ).Cross( p_int - a_int ).z;
+			return ( b_int - a_int ).Cross( p_int - a_int ).z();
 		};
 
 		int area = Edge( a, b, c );
@@ -132,7 +132,7 @@ namespace Rasterizer::Graphics
 		{
 			for ( int x = left; x < right; x++ )
 			{
-				Vector2Int p( x, y );
+				Vei3 p( x, y, 0 );
 				float alpha = (float) Edge( a, b, p ) / area;
 				float beta = (float) Edge( b, c, p ) / area;
 				float gamma = (float) Edge( c, a, p ) / area;
@@ -140,7 +140,7 @@ namespace Rasterizer::Graphics
 				if ( alpha < 0 || beta < 0 || gamma < 0 )
 					continue;
 				
-				unsigned char depth = static_cast<unsigned char>( alpha * a.z + beta * b.z + gamma * c.z );
+				unsigned char depth = static_cast<unsigned char>( alpha * a.z() + beta * b.z() + gamma * c.z() );
 
 				if ( depth <= m_depthbuffer.Get( x, y ) )
 					continue;
@@ -157,26 +157,26 @@ namespace Rasterizer::Graphics
 		{
 			for ( int point = 0; point < 3; point++ )
 			{
-				Vector3Int start( Project( model.GetVertex( i, point ) ) );
-				Vector3Int end = {};
+				Vei3 start( Project( model.GetVertex( i, point ) ) );
+				Vei3 end = {};
 
 				if ( point == 2 )
 				{
-					end = Vector3Int( Project( model.GetVertex( i, 0 ) ) );
+					end = Vei3( Project( model.GetVertex( i, 0 ) ) );
 				}
 				else
 				{
-					end = Vector3Int( Project( model.GetVertex( i, point + 1 ) ) );
+					end = Vei3( Project( model.GetVertex( i, point + 1 ) ) );
 				}
 
-				DrawLine( Vector2Int( start.x, start.y ), Vector2Int( end.x, end.y ), colour );
+				DrawLine( Vei2( start.x(), start.y()), Vei2(end.x(), end.y()), colour);
 			}
 		}
 
 		for ( int i = 0; i < model.VertexCount(); i++ )
 		{
-			Vector3Int vertex = Project( model.GetVertex( i ) );
-			m_framebuffer.PutPixel( vertex.x, vertex.y, Colors::White );
+			Vei3 vertex = Project( model.GetVertex( i ) );
+			m_framebuffer.PutPixel( vertex.x(), vertex.y(), Colors::White);
 		}
 	}
 
@@ -187,16 +187,16 @@ namespace Rasterizer::Graphics
 
 		for ( int i = 0; i < model.FaceCount(); i++ )
 		{
-			Vector3Int a( Project( model.GetVertex( i, 0 ) ) );
-			Vector3Int b( Project( model.GetVertex( i, 1 ) ) );
-			Vector3Int c( Project( model.GetVertex( i, 2 ) ) );
+			Vei3 a( Project( model.GetVertex( i, 0 ) ) );
+			Vei3 b( Project( model.GetVertex( i, 1 ) ) );
+			Vei3 c( Project( model.GetVertex( i, 2 ) ) );
 
 			DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
 			//DrawTriangle( a, b, c, colour );
 		}
 	}
 
-	Vector3Int Renderer::Project( const Vector3& v ) const
+	Vei3 Renderer::Project( const Vec3& v ) const
 	{
 		// from [-1, 1], to [0, ScreenWidth/ScreenHeight)
 		float scaleX = ( ScreenWidth - 1 ) * 0.5f;
@@ -206,20 +206,20 @@ namespace Rasterizer::Graphics
 		float offsetX = ScreenWidth * 0.5f;
 		float offsetY = ScreenHeight * 0.5f;
 
-		int x = (int) ( ( v.x ) * scale + offsetX );
-		int y = (int) ( ( v.y ) * scale + offsetY );
-		int z = (int) ( ( v.z + 1.0f ) * 255 * 0.5f ); // mapped to [0,255]
+		int x = (int) ( ( v.x() ) * scale + offsetX );
+		int y = (int) ( ( v.y() ) * scale + offsetY );
+		int z = (int) ( ( v.z() + 1.0f ) * 255 * 0.5f ); // mapped to [0,255]
 
 		// std::cout << "Original: " << v.x << ", " << v.y << " Projection: " << x << ", " << y << std::endl;
 
 		// ScreenHeight - y because of inverted y direction
-		return Vector3Int( x, ScreenHeight - 1 - y, z );
+		return Vei3( x, ScreenHeight - 1 - y, z );
 	}
 
-	int Renderer::Intersect( Vector2Int v0, Vector2Int v1, int step ) const
+	int Renderer::Intersect( Vei2 v0, Vei2 v1, int step ) const
 	{
-		float t = (float)( step - v0.y ) / ( v1.y - v0.y ); // [0,1]
-		float x = v0.x + t * ( v1.x - v0.x );
+		float t = (float)( step - v0.y() ) / ( v1.y() - v0.y() ); // [0,1]
+		float x = v0.x() + t * ( v1.x() - v0.x() );
 
 		return (int)x;
 	}

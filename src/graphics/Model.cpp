@@ -65,14 +65,14 @@ namespace Rasterizer::Graphics
 		return (int) m_vertex_indices.size() / 3;
 	}
 
-	Vector3 Model::GetVertex( const int index ) const
+	Vec3 Model::GetVertex( const int index ) const
 	{
 		assert( index >= 0 );
 		assert( index < m_vertices.size() );
 		return m_vertices[index];
 	}
 
-	Vector3 Model::GetVertex( const int faceIndex, const int vertexIndex ) const
+	Vec3 Model::GetVertex( const int faceIndex, const int vertexIndex ) const
 	{
 		assert( faceIndex >= 0 );
 		assert( faceIndex < FaceCount() );

@@ -32,15 +32,15 @@ namespace Rasterizer::Core
 	{
 		//m_renderer.DrawWireframe( model, Colors::Red );
 
-		//m_renderer.DrawTriangleScanline( Vector2Int( 7, 45 ), Vector2Int( 35, 100 ), Vector2Int( 45, 60 ), Colors::Red );
-		//m_renderer.DrawTriangleScanline( Vector2Int( 120, 35 ), Vector2Int( 90, 5 ), Vector2Int( 45, 110 ), Colors::White );
-		//m_renderer.DrawTriangleScanline( Vector2Int( 115, 83 ), Vector2Int( 80, 90 ), Vector2Int( 85, 120 ), Colors::Green );
+		//m_renderer.DrawTriangleScanline( Vei2( 7, 45 ), Vei2( 35, 100 ), Vei2( 45, 60 ), Colors::Red );
+		//m_renderer.DrawTriangleScanline( Vei2( 120, 35 ), Vei2( 90, 5 ), Vei2( 45, 110 ), Colors::White );
+		//m_renderer.DrawTriangleScanline( Vei2( 115, 83 ), Vei2( 80, 90 ), Vei2( 85, 120 ), Colors::Green );
 
 		//int halfWidth = m_renderer.ScreenWidth / 2;
 
-		//Vector3Int a( halfWidth, 50, 0 );
-		//Vector3Int b( 100, m_renderer.ScreenHeight - 100, 100);
-		//Vector3Int c( m_renderer.ScreenWidth - 100, m_renderer.ScreenHeight - 100, 200 );
+		//Vei3 a( halfWidth, 50, 0 );
+		//Vei3 b( 100, m_renderer.ScreenHeight - 100, 100);
+		//Vei3 c( m_renderer.ScreenWidth - 100, m_renderer.ScreenHeight - 100, 200 );
 
 		//m_renderer.DrawTriangle( a, b, c, Colors::Red );
 

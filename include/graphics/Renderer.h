@@ -28,16 +28,16 @@ namespace Rasterizer::Graphics
 		/*
 		 * Drawing
 		*/ 
-		void DrawLine( Vector2Int start, Vector2Int end, const Color colour );
-		void DrawLine( Vector2 start, Vector2 end, const Color colour )
+		void DrawLine( Vei2 start, Vei2 end, const Color colour );
+		void DrawLine( Vec2 start, Vec2 end, const Color colour )
 		{
-			DrawLine( Vector2Int( start ), Vector2Int( end ), colour );
+			DrawLine( Vei2( start ), Vei2( end ), colour );
 		}
-		void DrawTriangleWireframe( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour );
+		void DrawTriangleWireframe( Vei2 a, Vei2 b, Vei2 c, const Color colour );
 		// Scanline rasterization
-		void DrawTriangleScanline( Vector2Int a, Vector2Int b, Vector2Int c, const Color colour );
+		void DrawTriangleScanline( Vei2 a, Vei2 b, Vei2 c, const Color colour );
 		// Barycentric coordinates
-		void DrawTriangle( const Vector3Int& a, const Vector3Int& b, const Vector3Int& c, const Color colour );
+		void DrawTriangle( const Vei3& a, const Vei3& b, const Vei3& c, const Color colour );
 
 		// Model
 		void DrawWireframe( const Model& model, const Color colour );
@@ -45,7 +45,7 @@ namespace Rasterizer::Graphics
 
 		void VisualizeDepth();
 	private:
-		Vector3Int Project ( const Vector3& v ) const;
-		int Intersect ( Vector2Int v0, Vector2Int v1, int step ) const;
+		Vei3 Project ( const Vec3& v ) const;
+		int Intersect ( Vei2 v0, Vei2 v1, int step ) const;
 	};
 }
