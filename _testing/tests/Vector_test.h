@@ -93,5 +93,10 @@ namespace Testing::Tests::Vector_test
 		CHECK( product2.x() == 0 && product2.y() == 0 && product2.z() == 15);
 		CHECK( v3.Cross( v4 ) == -v4.Cross( v3 ) );
 
+		Vec<3> v5( 1.0f, 2.0f, 3.0f );
+		Vec<3> v6( 4.0f, 1.0f, 8.0f );
+		Vec<3> product3 = v5.Cross( v6 );
+
+		CHECK( product3.x() == 13.0f && product3.y() == 4.0f && product3.z() == -7.0f );
 	}
 }

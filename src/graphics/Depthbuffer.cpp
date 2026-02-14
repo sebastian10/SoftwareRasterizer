@@ -1,6 +1,7 @@
 
 #include <algorithm>
-
+#include <assert.h>
+#include "Renderer.h"
 #include "graphics/Depthbuffer.h"
 
 namespace Rasterizer::Graphics
@@ -21,11 +22,19 @@ namespace Rasterizer::Graphics
 
 	void Depthbuffer::Set( int x, int y, unsigned char value )
 	{
+		assert( x >= 0 );
+		assert( x < Renderer::ScreenWidth );
+		assert( y >= 0 );
+		assert( y < Renderer::ScreenHeight );
 		m_buffer[y * m_width + x] = value;
 	}
 
 	unsigned char Depthbuffer::Get( int x, int y ) const
 	{
+		assert( x >= 0 );
+		assert( x < Renderer::ScreenWidth );
+		assert( y >= 0 );
+		assert( y < Renderer::ScreenHeight );
 		return m_buffer[y * m_width + x];
 	}
 

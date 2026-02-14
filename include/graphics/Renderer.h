@@ -4,6 +4,7 @@
 #include "Framebuffer.h"
 #include "Depthbuffer.h"
 #include "Model.h"
+#include "Matrix.h"
 
 // Coordinate conventions:
 // - Screen space Y increases downward
@@ -46,6 +47,8 @@ namespace Rasterizer::Graphics
 		void VisualizeDepth();
 	private:
 		Vei3 Project ( const Vec3& v ) const;
+		Vec3 Perspective( const Vec3& v ) const;
+		Vec3 Rotate( const Vec3& v, float amount ) const;
 		int Intersect ( Vei2 v0, Vei2 v1, int step ) const;
 	};
 }

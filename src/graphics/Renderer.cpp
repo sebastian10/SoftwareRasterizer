@@ -3,6 +3,7 @@
 #include "graphics/shapes/Rectangle.h"
 #include <assert.h>
 #include <algorithm>
+#include <numbers>
 
 #include <random>
 
@@ -19,6 +20,7 @@ namespace Rasterizer::Graphics
 	void Renderer::BeginFrame()
 	{
 		m_framebuffer.Flush();
+		m_depthbuffer.Clear( 0 );
 	}
 
 	void Renderer::EndFrame()
@@ -114,6 +116,11 @@ namespace Rasterizer::Graphics
 		int left = min( min( a.x(), b.x() ), c.x() );
 		int right = max( max( a.x(), b.x() ), c.x() );
 
+		top = max( 0, top );
+		bottom = min( Renderer::ScreenHeight - 1, bottom );
+		left = max( 0, left );
+		right = min( Renderer::ScreenWidth - 1, right );
+
 		auto Edge = []( const Vei3& a, const Vei3& b, const Vei3& p )
 		{
 			Vei3 a_int = Vei3( a );
@@ -184,12 +191,14 @@ namespace Rasterizer::Graphics
 	{
 		std::mt19937 rng( std::random_device{}() );
 		std::uniform_int_distribution<int> colorDist( 0, 255 );
-
+		
 		for ( int i = 0; i < model.FaceCount(); i++ )
 		{
-			Vei3 a( Project( model.GetVertex( i, 0 ) ) );
-			Vei3 b( Project( model.GetVertex( i, 1 ) ) );
-			Vei3 c( Project( model.GetVertex( i, 2 ) ) );
+			float theta = std::numbers::pi / 6;
+
+			Vei3 a( Project( Perspective( Rotate( model.GetVertex( i, 0 ), theta ) ) ) );
+			Vei3 b( Project( Perspective( Rotate( model.GetVertex( i, 1 ), theta ) ) ) );
+			Vei3 c( Project( Perspective( Rotate( model.GetVertex( i, 2 ), theta ) ) ) );
 
 			DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
 			//DrawTriangle( a, b, c, colour );
@@ -216,6 +225,23 @@ namespace Rasterizer::Graphics
 		return Vei3( x, ScreenHeight - 1 - y, z );
 	}
 
+	Vec3 Renderer::Perspective( const Vec3& v ) const
+	{
+		constexpr float c = 10.0f;
+		return v / ( 1 - v.z() / c );
+	}
+
+	Vec3 Renderer::Rotate( const Vec3& v, float theta ) const
+	{
+		Mat3 Ry = {
+			std::cos( theta ), 0, std::sin( theta ),
+			0, 1, 0,
+			-std::sin( theta ), 0, std::cos(theta)
+		};
+
+		return Ry * v;
+	}
+
 	int Renderer::Intersect( Vei2 v0, Vei2 v1, int step ) const
 	{
 		float t = (float)( step - v0.y() ) / ( v1.y() - v0.y() ); // [0,1]
@@ -233,7 +259,5 @@ namespace Rasterizer::Graphics
 				m_framebuffer.PutPixel( x, y, Colors::Grayscale( m_depthbuffer.Get( x, y ) ) );
 			}
 		}
-
-		
 	}
 }
