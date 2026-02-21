@@ -9,8 +9,8 @@ namespace Rasterizer::Core
 		m_wnd( m_wnd ),
 		m_renderer( m_wnd.GetHandle() ),
 		ft(),
-		model( "../assets/diablo3_pose.obj" )
-		//model( "../assets/african_head.obj" )
+		//model( "../assets/diablo3_pose.obj" )
+		model( "../assets/african_head.obj" )
 	{
 
 	}
@@ -25,7 +25,7 @@ namespace Rasterizer::Core
 
 	void Engine::Update()
 	{
-
+		model.Rotation.x() += 0.1f;
 	}
 
 	void Engine::DrawFrame()

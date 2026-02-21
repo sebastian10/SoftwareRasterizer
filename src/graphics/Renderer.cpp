@@ -13,7 +13,7 @@ namespace Rasterizer::Graphics
 		:
 		m_framebuffer( hWnd ),
 		m_depthbuffer( ScreenWidth, ScreenHeight ),
-		m_camera( Vec3( 0,0,-3 ) )
+		m_camera( Vec3( 0,0,-4 ), 45.0f, ScreenWidth / ScreenHeight )
 	{
 		m_camera.ComputeProjectionMatrix();
 	}
@@ -193,7 +193,7 @@ namespace Rasterizer::Graphics
 
 		// backface culling and removal of tiny triangles
 		float determinant = ABC.Determinant();
-		if ( std::abs( determinant ) < 1 )
+		if ( std::abs( determinant ) <= 0 )
 			return;
 
 		Mat3 ABCinv = ABC.Inversed( determinant );
@@ -274,7 +274,8 @@ namespace Rasterizer::Graphics
 
 			for ( const auto& tri : clippedTriangles )
 			{
-				Rasterize( tri, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
+				//Rasterize( tri, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
+				Rasterize( tri, colour );
 			}
 
 			//DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
