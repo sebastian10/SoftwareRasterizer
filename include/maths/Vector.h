@@ -45,10 +45,14 @@ public:
 	T& z() requires( N >= 3 ) { return vec[2]; }
 	T& w() requires( N >= 4 ) { return vec[3]; }
 
+	Vec<2, T> xy() requires( N >= 2 ) { return Vec<2, T>( vec[0], vec[1] ); }
+
 	const T& x() const requires( N >= 1 ) { return vec[0]; }
 	const T& y() const requires( N >= 2 ) { return vec[1]; }
 	const T& z() const requires( N >= 3 ) { return vec[2]; }
 	const T& w() const requires( N >= 4 ) { return vec[3]; }
+
+	const Vec<2, T> xy() const requires( N >= 2 ) { return Vec<2, T>( vec[0], vec[1] ); }
 
 	T& operator[]( int i ) { return vec[i]; }
 	const T& operator[]( int i ) const { return vec[i]; }
@@ -198,3 +202,4 @@ using Vec2 = Vec<2, float>;
 using Vei2 = Vec<2, int>;
 using Vec3 = Vec<3, float>;
 using Vei3 = Vec<3, int>;
+using Vec4 = Vec<4, float>;

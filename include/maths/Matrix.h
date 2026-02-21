@@ -11,6 +11,36 @@ public:
 	std::array<T, N * N> mat{};
 private:
 public:
+	static Mat<4, T> Translation( const Vec3& position )
+	{
+		return {
+			1, 0, 0, position.x(),
+			0, 1, 0, position.y(),
+			0, 0, 1, position.z(),
+			0, 0, 0, 1
+		};
+	}
+
+	static Mat<4, T> Rotation ( const float theta )
+	{
+		return {
+			std::cos( theta ), 0, std::sin( theta ), 0,
+			0, 1, 0, 0,
+			-std::sin( theta ), 0, std::cos( theta ), 0,
+			0, 0, 0, 1
+		};
+	}
+
+	static Mat<4, T> Scale( const Vec3& scale )
+	{
+		return {
+			scale.x(), 0, 0, 0,
+			0, scale.y(), 0, 0,
+			0, 0, scale.z(), 0,
+			0, 0, 0, 1
+		};
+	}
+
 	T& operator()( int row, int col )
 	{
 		return mat[row * N + col];
@@ -137,30 +167,6 @@ public:
 		return a * ( e * i - f * h ) - b * ( d * i - f * g ) + c * ( d * h - e * g );
 	}
 
-	//// return submatrix, by removing row and column
-	//Mat<N-1, T> Submatrix( int row, int colum ) const
-	//{
-	//	Mat<N - 1, T> result;
-
-	//	int i = 0;
-	//	for ( int r = 0; r < N; ++r )
-	//	{
-	//		if ( r == row )
-	//			continue;
-
-	//		for ( int c = 0; c < N; ++c )
-	//		{
-	//			if ( c == column )
-	//				continue;
-
-	//			result.mat[i] = ( *this )( r, c );
-	//			i++;
-	//		}
-	//	}
-
-	//	return result;
-	//}
-
 	Mat<2, T> Inversed() const requires( N == 2 )
 	{
 		T det = Determinant();
@@ -180,25 +186,11 @@ public:
 		return adj * ( (T)1 / det );
 	}
 
-	Mat<3, T> Inversed() const requires( N == 3 )
+	Mat<3, T> Inversed( T det ) const requires( N == 3 )
 	{
-		T det = Determinant();
-
 		assert( std::abs( det ) > Rasterizer::Maths::epsilon );
 
 		Mat<3, T> comatrix;
-
-		//comatrix( 0, 0 ) = Mat<2, T>{ ( *this )( 1,1 ), ( *this )( 1,2 ), ( *this )( 2,1 ), ( *this )( 2,2 ) }.Determinant();
-		//comatrix( 0, 1 ) = -(Mat<2, T>{ ( *this )( 1,0 ), ( *this )( 1,2 ), ( *this )( 2,0 ), ( *this )( 2,2 ) }.Determinant());
-		//comatrix( 0, 2 ) = Mat<2, T>{ ( *this )( 1,0 ), ( *this )( 1,1 ), ( *this )( 2,0 ), ( *this )( 2,1 ) }.Determinant();
-
-		//comatrix( 1, 0 ) = -(Mat<2, T>{ ( *this )( 0,1 ), ( *this )( 0,2 ), ( *this )( 2,1 ), ( *this )( 2,2 ) }.Determinant());
-		//comatrix( 1, 1 ) = Mat<2, T>{ ( *this )( 0,0 ), ( *this )( 0,2 ), ( *this )( 2,0 ), ( *this )( 2,2 ) }.Determinant();
-		//comatrix( 1, 2 ) = -(Mat<2, T>{ ( *this )( 0,0 ), ( *this )( 0,1 ), ( *this )( 2,0 ), ( *this )( 2,1 ) }.Determinant());
-
-		//comatrix( 2, 0 ) = Mat<2, T>{ ( *this )( 0,1 ), ( *this )( 0,2 ), ( *this )( 1,1 ), ( *this )( 1,2 ) }.Determinant();
-		//comatrix( 2, 1 ) = -(Mat<2, T>{ ( *this )( 0,0 ), ( *this )( 0,2 ), ( *this )( 1,0 ), ( *this )( 1,2 ) }.Determinant());
-		//comatrix( 2, 2 ) = Mat<2, T>{ ( *this )( 0,0 ), ( *this )( 0,1 ), ( *this )( 1,0 ), ( *this )( 1,1 ) }.Determinant();
 
 		comatrix( 0, 0 ) = Det2x2( ( *this )( 1, 1 ), ( *this )( 1, 2 ), ( *this )( 2, 1 ), ( *this )( 2, 2 ) );
 		comatrix( 0, 1 ) = -( Det2x2( ( *this )( 1, 0 ), ( *this )( 1, 2 ), ( *this )( 2, 0 ), ( *this )( 2, 2 ) ) );
@@ -218,3 +210,4 @@ private:
 };
 
 using Mat3 = Mat<3, float>;
+using Mat4 = Mat<4, float>;

@@ -5,6 +5,7 @@
 #include "Depthbuffer.h"
 #include "Model.h"
 #include "Matrix.h"
+#include "Camera.h"
 
 // Coordinate conventions:
 // - Screen space Y increases downward
@@ -21,6 +22,7 @@ namespace Rasterizer::Graphics
 	private:
 		Framebuffer m_framebuffer;
 		Depthbuffer m_depthbuffer;
+		Camera m_camera;
 	public:
 		Renderer( const HWND& hWnd );
 		void BeginFrame();
@@ -39,6 +41,8 @@ namespace Rasterizer::Graphics
 		void DrawTriangleScanline( Vei2 a, Vei2 b, Vei2 c, const Color colour );
 		// Barycentric coordinates
 		void DrawTriangle( const Vei3& a, const Vei3& b, const Vei3& c, const Color colour );
+		void Rasterize( const std::array<Vec4, 3> clip, const Color colour);
+
 
 		// Model
 		void DrawWireframe( const Model& model, const Color colour );
@@ -50,5 +54,6 @@ namespace Rasterizer::Graphics
 		Vec3 Perspective( const Vec3& v ) const;
 		Vec3 Rotate( const Vec3& v, float amount ) const;
 		int Intersect ( Vei2 v0, Vei2 v1, int step ) const;
+		std::vector<std::array<Vec4, 3>> ClipTriangleNearPlane( const std::array<Vec4, 3>& tri ) const;
 	};
 }

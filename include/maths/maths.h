@@ -7,7 +7,9 @@ namespace Rasterizer
 	class Maths
 	{
 	public:
-		static constexpr float epsilon = static_cast<float>( 1e-6 );
+		static constexpr double epsilon = static_cast<float>( 1e-10 );
+	private:
+	public:
 	private:
 	};
 }

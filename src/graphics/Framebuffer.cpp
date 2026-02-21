@@ -19,6 +19,8 @@ namespace Rasterizer::Graphics
 		// allocate memory for buffer (16-byte aligned for faster access)
 		m_backBuffer.Memory = reinterpret_cast<Color*>(
 			_aligned_malloc( sizeof( Color ) * Renderer::ScreenWidth * Renderer::ScreenHeight, 16u ) );
+
+		ComputeViewportMatrix( 0, 0, Renderer::ScreenWidth, Renderer::ScreenHeight );
 	}
 
 	Framebuffer::~Framebuffer()
@@ -55,5 +57,18 @@ namespace Rasterizer::Graphics
 		assert( y >= 0 );
 		assert( y < Renderer::ScreenHeight );
 		m_backBuffer.Memory[y * Renderer::ScreenWidth + x] = c;
+	}
+
+	void Framebuffer::ComputeViewportMatrix( const int x, const int y, const int width, const int height )
+	{
+		const float halfWidth = width / 2.0f;
+		const float halfHeight = height / 2.0f;
+
+		ViewportMatrix = {
+			halfWidth, 0, 0, x + halfWidth,
+			0, halfHeight, 0, y + halfHeight,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		};
 	}
 }

@@ -12,15 +12,18 @@ namespace Rasterizer::Graphics
 	Renderer::Renderer( const HWND& hWnd )
 		:
 		m_framebuffer( hWnd ),
-		m_depthbuffer( ScreenWidth, ScreenHeight )
+		m_depthbuffer( ScreenWidth, ScreenHeight ),
+		m_camera( Vec3( 0,0,-3 ) )
 	{
-
+		m_camera.ComputeProjectionMatrix();
 	}
 
 	void Renderer::BeginFrame()
 	{
 		m_framebuffer.Flush();
 		m_depthbuffer.Clear( 0 );
+
+		m_camera.ComputeViewMatrix();	
 	}
 
 	void Renderer::EndFrame()
@@ -158,6 +161,65 @@ namespace Rasterizer::Graphics
 		}
 	}
 
+	void Renderer::Rasterize( const std::array<Vec4, 3> clip, const Color colour)
+	{
+		Vec4 ndc[3] = {
+			clip[0] / clip[0].w(),
+			clip[1] / clip[1].w(),
+			clip[2] / clip[2].w(),
+		};
+
+		Vec2 screen[3] = {
+			( m_framebuffer.ViewportMatrix * ndc[0] ).xy(),
+			( m_framebuffer.ViewportMatrix * ndc[1] ).xy(),
+			( m_framebuffer.ViewportMatrix * ndc[2] ).xy(),
+		};
+
+		float top = min( min( screen[0].y(), screen[1].y()), screen[2].y());
+		float bottom = max( max( screen[0].y(), screen[1].y() ), screen[2].y() );
+		float left = min( min( screen[0].x(), screen[1].x() ), screen[2].x() );
+		float right = max( max( screen[0].x(), screen[1].x() ), screen[2].x() );
+
+		top = max( 0, top );
+		bottom = min( Renderer::ScreenHeight - 1, bottom );
+		left = max( 0, left );
+		right = min( Renderer::ScreenWidth - 1, right );
+
+		Mat3 ABC = {
+			screen[0].x(), screen[1].x(), screen[2].x(),
+			screen[0].y(), screen[1].y(), screen[2].y(),
+			1.0f, 1.0f, 1.0f
+		};
+
+		// backface culling and removal of tiny triangles
+		float determinant = ABC.Determinant();
+		if ( std::abs( determinant ) < 1 )
+			return;
+
+		Mat3 ABCinv = ABC.Inversed( determinant );
+
+		#pragma omp parallel for
+		for ( int y = (int)top; y <= bottom; y++ )
+		{
+			for ( int x = (int)left; x <= right; x++ )
+			{
+				// barycentric coordinates of {x,y}
+				Vec3 baryCoords = ABCinv * Vec3( static_cast<double>( x ), static_cast<double>( y ), 1.0f ); 
+				if ( baryCoords.x() < 0 || baryCoords.y() < 0 || baryCoords.z() < 0 ) 
+					continue;     
+
+				double depth = baryCoords.Dot( Vec3( ndc[0].z(), ndc[1].z(), ndc[2].z() ) );
+
+				if ( depth <= m_depthbuffer.Get( x, y ) )
+					continue;
+
+				m_depthbuffer.Set( x, y, depth );
+				m_framebuffer.PutPixel( x, y, colour );
+			}
+		}
+	}
+
+
 	void Renderer::DrawWireframe( const Model& model, const Color colour )
 	{
 		for ( int i = 0; i < model.FaceCount(); i++ )
@@ -191,16 +253,31 @@ namespace Rasterizer::Graphics
 	{
 		std::mt19937 rng( std::random_device{}() );
 		std::uniform_int_distribution<int> colorDist( 0, 255 );
+
+		Mat4 modelMatrix = model.GetModelMatrix();
+		Mat4 v = m_camera.ViewMatrix;
+		Mat4 p = m_camera.ProjectionMatrix;
+		Mat4 compositionMatrix = m_camera.ProjectionMatrix * m_camera.ViewMatrix * modelMatrix;
 		
 		for ( int i = 0; i < model.FaceCount(); i++ )
 		{
-			float theta = std::numbers::pi / 6;
+			std::array<Vec4, 3> clip;
 
-			Vei3 a( Project( Perspective( Rotate( model.GetVertex( i, 0 ), theta ) ) ) );
-			Vei3 b( Project( Perspective( Rotate( model.GetVertex( i, 1 ), theta ) ) ) );
-			Vei3 c( Project( Perspective( Rotate( model.GetVertex( i, 2 ), theta ) ) ) );
+			for ( int j : { 0, 1, 2 } )
+			{
+				Vec3 vertex = model.GetVertex( i, j );
+				clip[j] = compositionMatrix * Vec4( vertex.x(), vertex.y(), vertex.z(), 1.0f );
+			}
 
-			DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
+			//Rasterize( clip, colour );
+			auto clippedTriangles = ClipTriangleNearPlane( clip );
+
+			for ( const auto& tri : clippedTriangles )
+			{
+				Rasterize( tri, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
+			}
+
+			//DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
 			//DrawTriangle( a, b, c, colour );
 		}
 	}
@@ -256,8 +333,64 @@ namespace Rasterizer::Graphics
 		{
 			for ( int x = 0; x < m_depthbuffer.GetWidth(); x++ )
 			{
-				m_framebuffer.PutPixel( x, y, Colors::Grayscale( m_depthbuffer.Get( x, y ) ) );
+				//m_framebuffer.PutPixel( x, y, Colors::Grayscale( m_depthbuffer.Get( x, y ) ) );
 			}
 		}
+	}
+
+	std::vector<std::array<Vec4, 3>> Renderer::ClipTriangleNearPlane( const std::array<Vec4, 3>& tri ) const
+	{
+		const Vec4& v0 = tri[0];
+		const Vec4& v1 = tri[1];
+		const Vec4& v2 = tri[2];
+
+		auto inside = []( const Vec4& v ) { return v.z() <= v.w(); };
+		//auto inside = []( const Vec4& v ) { return v.z() + v.w() >= 0.0; };
+
+		bool in0 = inside( v0 );
+		bool in1 = inside( v1 );
+		bool in2 = inside( v2 );
+
+		std::vector<std::array<Vec4, 3>> out;
+
+		// all outside
+		if ( !in0 && !in1 && !in2 ) return out;
+
+		// all inside
+		if ( in0 && in1 && in2 )
+		{
+			out.push_back( { v0,v1,v2 } );
+			return out;
+		}
+
+		auto intersect = []( const Vec4& inside, const Vec4& outside )
+		{
+			float fIn = inside.z() + inside.w();
+			float fOut = outside.z() + outside.w();
+			float t = fIn / ( fIn - fOut );
+			return inside + ( outside - inside ) * t;
+		};
+
+		// 1 inside, 2 outside
+		if ( in0 && !in1 && !in2 ) out.push_back( { v0, intersect( v0,v1 ), intersect( v0,v2 ) } );
+		else if ( in1 && !in0 && !in2 ) out.push_back( { v1, intersect( v1,v0 ), intersect( v1,v2 ) } );
+		else if ( in2 && !in0 && !in1 ) out.push_back( { v2, intersect( v2,v0 ), intersect( v2,v1 ) } );
+		// 2 inside, 1 outside
+		else if ( !in0 && in1 && in2 )
+		{
+			out.push_back( { v1,v2,intersect( v1,v0 ) } );
+			out.push_back( { v2, intersect( v1,v0 ), intersect( v2,v0 ) } );
+		}
+		else if ( in0 && !in1 && in2 )
+		{
+			out.push_back( { v0,v2,intersect( v0,v1 ) } );
+			out.push_back( { v2, intersect( v0,v1 ), intersect( v2,v1 ) } );
+		}
+		else if ( in0 && in1 && !in2 )
+		{
+			out.push_back( { v0,v1,intersect( v0,v2 ) } );
+			out.push_back( { v1, intersect( v0,v2 ), intersect( v1,v2 ) } );
+		}
+		return out;
 	}
 }

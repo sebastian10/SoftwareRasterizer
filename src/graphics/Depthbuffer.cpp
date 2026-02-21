@@ -15,12 +15,12 @@ namespace Rasterizer::Graphics
 		Clear( 0 );
 	}
 
-	void Depthbuffer::Clear( unsigned char value )
+	void Depthbuffer::Clear( double value )
 	{
 		std::fill( m_buffer.begin(), m_buffer.end(), value );
 	}
 
-	void Depthbuffer::Set( int x, int y, unsigned char value )
+	void Depthbuffer::Set( int x, int y, double value )
 	{
 		assert( x >= 0 );
 		assert( x < Renderer::ScreenWidth );
@@ -29,7 +29,7 @@ namespace Rasterizer::Graphics
 		m_buffer[y * m_width + x] = value;
 	}
 
-	unsigned char Depthbuffer::Get( int x, int y ) const
+	double Depthbuffer::Get( int x, int y ) const
 	{
 		assert( x >= 0 );
 		assert( x < Renderer::ScreenWidth );

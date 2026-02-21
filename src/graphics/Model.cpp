@@ -9,6 +9,8 @@
 namespace Rasterizer::Graphics
 {
 	Model::Model( const std::string& filename )
+		:
+		Scale( 1.0f, 1.0f, 1.0f )
 	{
 		std::ifstream file;
 		file.open( filename, std::ios_base::in );
@@ -79,5 +81,14 @@ namespace Rasterizer::Graphics
 		assert( vertexIndex >= 0 );
 		assert( vertexIndex < 3 );
 		return m_vertices[m_vertex_indices[faceIndex * 3 + vertexIndex]];
+	}
+
+	Mat4 Model::GetModelMatrix() const
+	{
+		Mat4 T = Mat4::Translation( Position );
+		Mat4 R = Mat4::Rotation( Rotation.z() ) * Mat4::Rotation( Rotation.y() ) * Mat4::Rotation( Rotation.x() );
+		Mat4 S = Mat4::Scale( Scale );
+
+		return T * R * S;
 	}
 }

@@ -8,13 +8,13 @@ namespace Rasterizer::Graphics
 	{
 	public:
 	private:
-		std::vector<unsigned char> m_buffer;
+		std::vector<double> m_buffer;
 		int m_width, m_height;
 	public:
 		Depthbuffer( const int width, const int height );
-		void Clear( unsigned char value );
-		void Set( int x, int y, unsigned char value );
-		unsigned char Get( int x, int y ) const;
+		void Clear( double value );
+		void Set( int x, int y, double value );
+		double Get( int x, int y ) const;
 		int GetWidth() const;
 		int GetHeigth() const;
 	private:

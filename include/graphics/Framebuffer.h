@@ -4,6 +4,7 @@
 #include "Color.h"
 #include "Vector.h"
 #include "Depthbuffer.h"
+#include "Matrix.h"
 
 namespace Rasterizer::Graphics
 {
@@ -16,6 +17,7 @@ namespace Rasterizer::Graphics
 	class Framebuffer
 	{
 	public:
+		Mat4 ViewportMatrix;
 	private:
 		HWND m_hWnd;
 		ENGINE_BITMAP m_backBuffer;
@@ -28,5 +30,6 @@ namespace Rasterizer::Graphics
 		void Display();
 		void PutPixel( int x, int y, Color c );
 	private:
+		void ComputeViewportMatrix( const int x, const int y, const int width, const int height );
 	};
 }
