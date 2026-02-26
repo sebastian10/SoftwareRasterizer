@@ -54,6 +54,8 @@ namespace Rasterizer::Graphics
 			}
 		}
 
+		CentreModel();
+
 		std::cout << "Total #vertices: " << VertexCount() << " #faces " << FaceCount() << std::endl;
 	}
 
@@ -81,6 +83,30 @@ namespace Rasterizer::Graphics
 		assert( vertexIndex >= 0 );
 		assert( vertexIndex < 3 );
 		return m_vertices[m_vertex_indices[faceIndex * 3 + vertexIndex]];
+	}
+
+	void Model::CentreModel()
+	{
+		Vec3 min = m_vertices[0];
+		Vec3 max = m_vertices[0];
+
+		for ( const auto& v : m_vertices )
+		{
+			min.x() = std::min( min.x(), v.x() );
+			min.y() = std::min( min.y(), v.y() );
+			min.z() = std::min( min.z(), v.z() );
+
+			max.x() = std::max( max.x(), v.x() );
+			max.y() = std::max( max.y(), v.y() );
+			max.z() = std::max( max.z(), v.z() );
+		}
+
+		Vec3 center = ( min + max ) * 0.5f;
+
+		for ( auto& v : m_vertices )
+		{
+			v -= center;
+		}
 	}
 
 	Mat4 Model::GetModelMatrix() const

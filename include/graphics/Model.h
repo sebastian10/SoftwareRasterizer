@@ -24,5 +24,6 @@ namespace Rasterizer::Graphics
 		Vec3 GetVertex( const int faceIndex, const int vertexIndex ) const;
 		Mat4 GetModelMatrix() const;
 	private:
+		void CentreModel();
 	};
 }

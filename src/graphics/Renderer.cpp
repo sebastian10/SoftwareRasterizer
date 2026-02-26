@@ -255,8 +255,6 @@ namespace Rasterizer::Graphics
 		std::uniform_int_distribution<int> colorDist( 0, 255 );
 
 		Mat4 modelMatrix = model.GetModelMatrix();
-		Mat4 v = m_camera.ViewMatrix;
-		Mat4 p = m_camera.ProjectionMatrix;
 		Mat4 compositionMatrix = m_camera.ProjectionMatrix * m_camera.ViewMatrix * modelMatrix;
 		
 		for ( int i = 0; i < model.FaceCount(); i++ )
@@ -267,6 +265,7 @@ namespace Rasterizer::Graphics
 			{
 				Vec3 vertex = model.GetVertex( i, j );
 				clip[j] = compositionMatrix * Vec4( vertex.x(), vertex.y(), vertex.z(), 1.0f );
+				//std::cout << "w: " << clip[j].w() << ", z: " << clip[j].z() << "\n";
 			}
 
 			//Rasterize( clip, colour );
