@@ -55,8 +55,10 @@ namespace Rasterizer::Graphics
 		}
 
 		CentreModel();
+		ComputeNormals();
 
 		std::cout << "Total #vertices: " << VertexCount() << " #faces " << FaceCount() << std::endl;
+		std::cout << "Total #vertex normals " << (int) m_vertexNormals.size() << " #face normals: " << (int)m_faceNormals.size() << std::endl;
 	}
 
 	int Model::VertexCount() const
@@ -83,6 +85,29 @@ namespace Rasterizer::Graphics
 		assert( vertexIndex >= 0 );
 		assert( vertexIndex < 3 );
 		return m_vertices[m_vertex_indices[faceIndex * 3 + vertexIndex]];
+	}
+
+	Vec3 Model::GetVertexNormal( const int index ) const
+	{
+		assert( index >= 0 );
+		assert( index < m_vertexNormals.size() );
+		return m_vertexNormals[index];
+	}
+
+	Vec3 Model::GetVertexNormal( const int faceIndex, const int vertexIndex ) const
+	{
+		assert( faceIndex >= 0 );
+		assert( faceIndex < FaceCount() );
+		assert( vertexIndex >= 0 );
+		assert( vertexIndex < 3 );
+		return m_vertexNormals[m_vertex_indices[faceIndex * 3 + vertexIndex]];
+	}
+
+	Vec3 Model::GetFaceNormal( const int index ) const
+	{
+		assert( index >= 0 );
+		assert( index < m_faceNormals.size() );
+		return m_faceNormals[index];
 	}
 
 	void Model::CentreModel()
@@ -116,5 +141,42 @@ namespace Rasterizer::Graphics
 		Mat4 S = Mat4::Scale( Scale );
 
 		return T * R * S;
+	}
+
+	void Model::ComputeNormals()
+	{
+		m_vertexNormals.resize( VertexCount(), Vec3( 0, 0, 0 ) );
+
+		for ( int i = 0; i < FaceCount(); i++ )
+		{
+			Vec3 faceNormal = GetFaceNormal( { GetVertex( i, 0 ), GetVertex( i, 1 ), GetVertex( i, 2 ) } );
+			m_faceNormals.emplace_back( faceNormal );
+
+			int idx0 = m_vertex_indices[i * 3 + 0];
+			int idx1 = m_vertex_indices[i * 3 + 1];
+			int idx2 = m_vertex_indices[i * 3 + 2];
+			ComputeVertexNormals( { idx0, idx1, idx2 }, faceNormal );
+		}
+
+		for ( Vec3& v : m_vertexNormals )
+		{
+			v.Normalise();
+		}
+	}
+
+	Vec3 Model::GetFaceNormal( const std::array<Vec3, 3>& triangle ) const
+	{
+		Vec3 e1 = triangle[1] - triangle[0];
+		Vec3 e2 = triangle[2] - triangle[0];
+
+		return e1.Cross(e2);
+	}
+
+	void Model::ComputeVertexNormals( const std::array<int, 3>& indices, const Vec3& faceNormal )
+	{
+		for ( auto i : indices )
+		{
+			m_vertexNormals[i] += faceNormal;
+		}
 	}
 }

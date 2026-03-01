@@ -206,6 +206,21 @@ public:
 
 		return comatrix.Transposed() * ( (T)1 / det );
 	}
+
+	Mat<3, T> ToMat3() const requires( N >= 4 )
+	{
+		Mat<3, T> result = {};
+
+		for ( int i = 0; i < 3; ++i )
+		{
+			for ( int j = 0; j < 3; ++j )
+			{
+				result.mat[i * 3 + j] = mat[i * 4 + j];
+			}
+		}
+
+		return result;
+	}
 private:
 };
 

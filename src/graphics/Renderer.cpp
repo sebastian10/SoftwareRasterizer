@@ -161,20 +161,23 @@ namespace Rasterizer::Graphics
 		}
 	}
 
-	void Renderer::Rasterize( const std::array<Vec4, 3> clip, const Color colour)
+	void Renderer::Rasterize( const Shapes::Triangle& tri, const Shaders::IShader& shader )
 	{
+		// to ndc 
 		Vec4 ndc[3] = {
-			clip[0] / clip[0].w(),
-			clip[1] / clip[1].w(),
-			clip[2] / clip[2].w(),
+			tri.vertices[0] / tri.vertices[0].w(),
+			tri.vertices[1] / tri.vertices[1].w(),
+			tri.vertices[2] / tri.vertices[2].w(),
 		};
 
+		// to screen coordinates
 		Vec2 screen[3] = {
 			( m_framebuffer.ViewportMatrix * ndc[0] ).xy(),
 			( m_framebuffer.ViewportMatrix * ndc[1] ).xy(),
 			( m_framebuffer.ViewportMatrix * ndc[2] ).xy(),
 		};
 
+		// bounding box
 		float top = min( min( screen[0].y(), screen[1].y()), screen[2].y());
 		float bottom = max( max( screen[0].y(), screen[1].y() ), screen[2].y() );
 		float left = min( min( screen[0].x(), screen[1].x() ), screen[2].x() );
@@ -206,15 +209,22 @@ namespace Rasterizer::Graphics
 				// barycentric coordinates of {x,y}
 				Vec3 baryCoords = ABCinv * Vec3( static_cast<double>( x ), static_cast<double>( y ), 1.0f ); 
 				if ( baryCoords.x() < 0 || baryCoords.y() < 0 || baryCoords.z() < 0 ) 
-					continue;     
+					continue;   
 
+				// depth calculation and testing
 				double depth = baryCoords.Dot( Vec3( ndc[0].z(), ndc[1].z(), ndc[2].z() ) );
 
 				if ( depth <= m_depthbuffer.Get( x, y ) )
 					continue;
 
+				// fragment shader
+				auto [discard, color] = shader.fragment( baryCoords );
+				if ( discard )
+					continue;
+
+				// draw
 				m_depthbuffer.Set( x, y, depth );
-				m_framebuffer.PutPixel( x, y, colour );
+				m_framebuffer.PutPixel( x, y, color );
 			}
 		}
 	}
@@ -249,36 +259,37 @@ namespace Rasterizer::Graphics
 		}
 	}
 
-	void Renderer::DrawModel( const Model& model, const Color colour )
+	void Renderer::DrawModel( const Model& model, const Color colour, const std::vector<std::unique_ptr<ILight>>& lights )
 	{
-		std::mt19937 rng( std::random_device{}() );
-		std::uniform_int_distribution<int> colorDist( 0, 255 );
-
-		Mat4 modelMatrix = model.GetModelMatrix();
-		Mat4 compositionMatrix = m_camera.ProjectionMatrix * m_camera.ViewMatrix * modelMatrix;
+		Mat4 modelView = m_camera.ViewMatrix * model.GetModelMatrix();
+		Mat4 mvp = m_camera.ProjectionMatrix * modelView;
 		
+		Shaders::GouraudShader shader( model, m_camera.ViewMatrix, m_camera.ProjectionMatrix, lights);
+
+		// Rasterize
 		for ( int i = 0; i < model.FaceCount(); i++ )
 		{
 			std::array<Vec4, 3> clip;
+			std::array<Vec4, 3> normals;
 
 			for ( int j : { 0, 1, 2 } )
 			{
-				Vec3 vertex = model.GetVertex( i, j );
-				clip[j] = compositionMatrix * Vec4( vertex.x(), vertex.y(), vertex.z(), 1.0f );
-				//std::cout << "w: " << clip[j].w() << ", z: " << clip[j].z() << "\n";
+				clip[j] = shader.vertex( i, j );
 			}
 
 			//Rasterize( clip, colour );
-			auto clippedTriangles = ClipTriangleNearPlane( clip );
+			//auto clippedTriangles = ClipTriangleNearPlane( clip );
 
-			for ( const auto& tri : clippedTriangles )
-			{
-				//Rasterize( tri, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
-				Rasterize( tri, colour );
-			}
+			Shapes::Triangle tri( clip, normals, colour, Vec4( model.GetFaceNormal( i ), 0.0f ) );
 
-			//DrawTriangle( a, b, c, Colors::MakeRGB( colorDist( rng ), colorDist( rng ), colorDist( rng ) ) );
-			//DrawTriangle( a, b, c, colour );
+			Rasterize( tri, shader );
+
+			//for ( const auto& tri : clippedTriangles )
+			//{
+			//	//Rasterize( tri, colour );
+			//	
+			//	//Rasterize( tri, col );
+			//}
 		}
 	}
 

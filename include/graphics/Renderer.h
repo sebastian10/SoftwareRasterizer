@@ -6,11 +6,16 @@
 #include "Model.h"
 #include "Matrix.h"
 #include "Camera.h"
+#include "shapes/Triangle.h"
+#include "shaders/Shader.h"
+#include "lighting/Light.h"
 
 // Coordinate conventions:
 // - Screen space Y increases downward
 // - Front-facing triangles have NEGATIVE signed area
 // - Backface culling uses: area >= 0
+
+using namespace Rasterizer::Graphics::Lighting;
 
 namespace Rasterizer::Graphics
 {
@@ -41,12 +46,12 @@ namespace Rasterizer::Graphics
 		void DrawTriangleScanline( Vei2 a, Vei2 b, Vei2 c, const Color colour );
 		// Barycentric coordinates
 		void DrawTriangle( const Vei3& a, const Vei3& b, const Vei3& c, const Color colour );
-		void Rasterize( const std::array<Vec4, 3> clip, const Color colour);
+		void Rasterize( const Shapes::Triangle& tri, const Shaders::IShader& shader );
 
 
 		// Model
 		void DrawWireframe( const Model& model, const Color colour );
-		void DrawModel( const Model& model, const Color colour );
+		void DrawModel( const Model& model, const Color colour, const std::vector<std::unique_ptr<ILight>>& lights );
 
 		void VisualizeDepth();
 	private:

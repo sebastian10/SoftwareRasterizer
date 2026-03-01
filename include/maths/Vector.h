@@ -31,6 +31,14 @@ public:
 		vec.fill( value );
 	}
 
+	Vec( const Vec<3, T>& other, T value ) requires( N == 4 )
+	{
+		vec[0] = other[0];
+		vec[1] = other[1];
+		vec[2] = other[2];
+		vec[3] = value;
+	}
+
 	template<typename U>
 	explicit Vec( const Vec<N, U>& other )
 	{
@@ -46,6 +54,7 @@ public:
 	T& w() requires( N >= 4 ) { return vec[3]; }
 
 	Vec<2, T> xy() requires( N >= 2 ) { return Vec<2, T>( vec[0], vec[1] ); }
+	Vec<3, T> xyz() requires( N >= 3 ) { return Vec<3, T>( vec[0], vec[1], vec[2] ); }
 
 	const T& x() const requires( N >= 1 ) { return vec[0]; }
 	const T& y() const requires( N >= 2 ) { return vec[1]; }
@@ -53,6 +62,7 @@ public:
 	const T& w() const requires( N >= 4 ) { return vec[3]; }
 
 	const Vec<2, T> xy() const requires( N >= 2 ) { return Vec<2, T>( vec[0], vec[1] ); }
+	const Vec<3, T> xyz() const requires( N >= 3 ) { return Vec<3, T>( vec[0], vec[1], vec[2] ); }
 
 	T& operator[]( int i ) { return vec[i]; }
 	const T& operator[]( int i ) const { return vec[i]; }
