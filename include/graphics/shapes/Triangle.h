@@ -9,18 +9,14 @@ namespace Rasterizer::Graphics::Shapes
 	struct Triangle
 	{
 		std::array<Vec4, 3> vertices;
-		std::array<Vec4, 3> vertexNormals;
-		Color colour;
-		Vec4 faceNormal;
+		//std::array<Vec4, 3> vertexNormals;
+		//Color colour;
+		//Vec4 faceNormal;
 
-		Triangle( std::array<Vec4, 3> vertices, std::array<Vec4, 3> normals, Color colour, Vec4 faceNormal )
+		Triangle( std::array<Vec4, 3> vertices )
 			:
-			vertices( vertices ),
-			vertexNormals( normals ),
-			colour( colour ),
-			faceNormal( faceNormal )
+			vertices( vertices )
 		{
-
 		}
 	};
 }

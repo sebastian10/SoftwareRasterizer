@@ -45,38 +45,50 @@ namespace Rasterizer::Graphics::Shaders
         virtual Vec4 vertex( const int face, const int vert )
         {
             Vec3 vertex = model.GetVertex( face, vert );                          
+
+            // position in view space
             Vec4 position = ModelView * Vec4{ vertex.x(), vertex.y(), vertex.z(), 1.0f };
-            tri[vert] = position.xyz();                            
-            return Projection * position;                         // in clip coordinates
+
+            // save a copy for further fragment calculations
+            tri[vert] = position.xyz();                     
+
+            // return vertex in clip space, after projection
+            return Projection * position;                         
         }
 
         virtual std::pair<bool, Color> fragment( const Vec3 bar ) const
         {
             // compute face normal
-            Vec3 normal = ( tri[1] - tri[0] ).Cross( tri[2] - tri[0] ).Normalise();
+            Vec3 normal = ( tri[2] - tri[0] ).Cross( tri[1] - tri[0] ).Normalise();
 
             // triangle point as surface position for flat shading
             Vec3 point = tri[0];
 
+            // view vector for specular light calculation 
             Vec3 view = (-point).GetNormalised();
 
             Vec3 colour(0.0f);
             for ( const auto& light : lights )
             {
+                // light direction, either
+                //      direction in case of directional light
+                //      light position - point in case of point light
                 Vec3 lDirection = light->GetLightDirection( point, ViewMatrix.ToMat3() );
+
+                // attenuation based on distance to light for point lights
                 Vec3 lightColour = light->GetColor() * light->GetAttenuation( point ) * light->GetIntensity();
 
-                // ambient
+                // ambient 
                 Vec3 ambient = lightColour * ka;
 
-                // Diffuse
+                // Diffuse 
                 float diff = max( 0.0f, normal.Dot( lDirection ) );
                 Vec3 diffuse = lightColour * diff * kd;
 
                 Vec3 specular( 0.0f );
                 if ( diff > 0.0f )
                 {
-                    // Specular
+                    // Specular 
                     Vec3 halfVector = ( lDirection + view ).Normalise();
                     float spec = std::pow( max( 0.0f, normal.Dot( halfVector ) ), shininess );
                     specular = lightColour * spec * ks;
@@ -85,15 +97,15 @@ namespace Rasterizer::Graphics::Shaders
                 colour += ambient + diffuse + specular;
             }
 
-            float maxVal = max( colour.x(), max(colour.y(), colour.z()));
-            //std::cout << "Max light value: " << maxVal << std::endl;
-
+            // clamping of final colour so it won't exceed values of 255
             Vec3 finalColour(
                 min( 1.f, colour.x() ),
                 min( 1.f, colour.y() ),
                 min( 1.f, colour.z() )
             );
 
+            // returns the final colour
+            // going from values [0,1] to [0,255]
             return { false, Colors::MakeRGB(                    // do not discard the pixel
                 (unsigned char) ( finalColour.x() * 255 ), 
                 (unsigned char) ( finalColour.y() * 255 ), 
@@ -112,10 +124,13 @@ namespace Rasterizer::Graphics::Shaders
         const std::vector<std::unique_ptr<ILight>>& lights;
         std::array<Vec3, 3> tri;  // triangle in camera coordinates
         std::array<Vec3, 3> vertexColors;
+        std::array<float, 3> clipW;
+
+        bool skip = false;
 
         Mat3 NormalMatrix;
 
-        float ka = 0.1f;            // ambient strength
+        float ka = 0.2f;            // ambient strength
         float kd = 0.8f;            // diffuse strength
         float ks = 0.4f;            // specular strength
         float shininess = 320.0f;
@@ -136,6 +151,8 @@ namespace Rasterizer::Graphics::Shaders
 
         virtual Vec4 vertex( const int face, const int vert )
         {
+            skip = false;
+
             Vec3 vertex = model.GetVertex( face, vert );
             Vec3 normal = model.GetVertexNormal( face, vert );
 
@@ -145,13 +162,14 @@ namespace Rasterizer::Graphics::Shaders
             Vec3 view = ( -position.xyz() ).GetNormalised();
 
             normal = NormalMatrix * normal;
-            if ( normal.GetLength() > 1e-6f )
+
+            if ( normal.GetLength() > Rasterizer::Maths::epsilon )
                 normal.Normalise();
             else
-                normal = Vec3( 0, 0, 1.0f ); // fallback
+                skip = true;
 
             // for visualising normals
-            // Vec3 debugColor = ( normal + Vec3( 1, 1, 1 ) ) * 0.5f;
+            Vec3 debugColor = ( normal + Vec3( 1, 1, 1 ) ) * 0.5f;
 
             Vec3 colour(0.0f);
             for ( const auto& light : lights )
@@ -176,10 +194,6 @@ namespace Rasterizer::Graphics::Shaders
                 }
 
                 colour += ambient + diffuse + specular;
-
-                //std::cout << "diff: " << diff << ",\n" <<
-                //    "normal: " << normal.x() << ", " << normal.y() << ", " << normal.z() << ",\n" <<
-                //    "L: " << lDirection.x() << ", " << lDirection.y() << ", " << lDirection.z() << std::endl;
             }
 
             Vec3 finalColour(
@@ -190,18 +204,22 @@ namespace Rasterizer::Graphics::Shaders
 
             vertexColors[vert] = finalColour * 255;
 
-            return Projection * position;                         // in clip coordinates
+            Vec4 clip = Projection * position;
+            clipW[vert] = clip.w();
+            return clip;                         // in clip coordinates
         }
 
         virtual std::pair<bool, Color> fragment( const Vec3 bar ) const
         {
             float a = bar.x(), b = bar.y(), c = bar.z();
+             
+            float rcol = a * vertexColors[0].x() + b * vertexColors[1].x() + c * vertexColors[2].x();
 
-            int rCol = (int) ( a * vertexColors[0].x() + b * vertexColors[1].x() + c * vertexColors[2].x() );
-            int gCol = (int) ( a * vertexColors[0].y() + b * vertexColors[1].y() + c * vertexColors[2].y() );
-            int bCol = (int) ( a * vertexColors[0].z() + b * vertexColors[1].z() + c * vertexColors[2].z() );
+            float gcol = a * vertexColors[0].y() + b * vertexColors[1].y() + c * vertexColors[2].y();
 
-            return { false, Colors::MakeRGB( rCol, gCol, bCol ) };         // do not discard the pixel
+            float bcol = a * vertexColors[0].z() + b * vertexColors[1].z() + c * vertexColors[2].z();
+
+            return { skip, Colors::MakeRGB( (int) rcol, (int) gcol, (int) bcol ) };
         }
     };
 }

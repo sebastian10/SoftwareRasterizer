@@ -34,12 +34,18 @@ add_executable(MyEngine WIN32
     "src/graphics/Model.cpp" 
     "include/graphics/Renderer.h" 
     "src/graphics/Renderer.cpp" 
-    "include/graphics/shapes/Rectangle.h"  
     "include/graphics/Depthbuffer.h" 
     "src/graphics/Depthbuffer.cpp"
     "include/maths/Matrix.h" 
     "include/maths/Vector.h"
- "include/graphics/Camera.h" "src/graphics/Camera.cpp" "include/graphics/shapes/Triangle.h"  "include/graphics/shaders/Shader.h" "include/graphics/lighting/Light.h" "include/graphics/lighting/DirectionalLight.h" "include/graphics/lighting/PointLight.h")
+    "include/graphics/Camera.h" 
+    "src/graphics/Camera.cpp" 
+    "include/graphics/shapes/Triangle.h"  
+    "include/graphics/shaders/Shader.h" 
+    "include/graphics/lighting/Light.h" 
+    "include/graphics/lighting/DirectionalLight.h" 
+    "include/graphics/lighting/PointLight.h"
+)
 
 target_include_directories(MyEngine PRIVATE 
     ${CMAKE_SOURCE_DIR}/include
@@ -57,7 +63,8 @@ add_executable(Tests
     "include/maths/Matrix.h" 
     "_testing/tests/Matrix_test.h" 
     "include/maths/Vector.h" 
-    "_testing/tests/Vector_test.h" "include/graphics/Camera.h" "src/graphics/Camera.cpp" "include/graphics/shapes/Triangle.h"  "include/graphics/shaders/Shader.h" "include/graphics/lighting/Light.h" "include/graphics/lighting/DirectionalLight.h" "include/graphics/lighting/PointLight.h")
+    "_testing/tests/Vector_test.h"
+)
 
 target_include_directories(Tests PRIVATE 
     ${CMAKE_SOURCE_DIR}/include

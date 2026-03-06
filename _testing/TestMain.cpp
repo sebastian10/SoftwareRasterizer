@@ -25,5 +25,8 @@ int main()
 
 	runner.RunAll();
 
+	std::cout << "\nPress any key to exit..." << std::endl;
+	std::cin.get();
+
 	return 0;
 }

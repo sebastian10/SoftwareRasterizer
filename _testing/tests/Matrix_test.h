@@ -144,7 +144,7 @@ namespace Testing::Tests::Matrix_test
 			-5.0f, 4.0f, 1.0f
 		};
 
-		CHECK( B.Inversed() == Binv );
-		CHECK( B.Inversed() * B == Mat<3>::Identity() );
+		CHECK( B.Inversed( B.Determinant() ) == Binv );
+		CHECK( B.Inversed( B.Determinant() ) * B == Mat<3>::Identity() );
 	}
 }

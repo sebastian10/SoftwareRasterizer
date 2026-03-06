@@ -1,6 +1,5 @@
 
 #include "graphics/Renderer.h"
-#include "graphics/shapes/Rectangle.h"
 #include <assert.h>
 #include <algorithm>
 #include <numbers>
@@ -15,7 +14,7 @@ namespace Rasterizer::Graphics
 		m_depthbuffer( ScreenWidth, ScreenHeight ),
 		m_camera( Vec3( 0,0,-4 ), 45.0f, ScreenWidth / ScreenHeight )
 	{
-		m_camera.ComputeProjectionMatrix();
+		m_camera.ComputeProjectionMatrix(); // only needs to be computed once
 	}
 
 	void Renderer::BeginFrame()
@@ -23,6 +22,7 @@ namespace Rasterizer::Graphics
 		m_framebuffer.Flush();
 		m_depthbuffer.Clear( 0 );
 
+		// needs to be computed once per frame
 		m_camera.ComputeViewMatrix();	
 	}
 
@@ -112,6 +112,7 @@ namespace Rasterizer::Graphics
 		}
 	}
 
+	// old rasterisation function before Matrices were used
 	void Renderer::DrawTriangle( const Vei3& a, const Vei3& b, const Vei3& c, const Color colour )
 	{
 		int top = min( min( a.y(), b.y() ), c.y() );
@@ -150,7 +151,9 @@ namespace Rasterizer::Graphics
 				if ( alpha < 0 || beta < 0 || gamma < 0 )
 					continue;
 				
-				unsigned char depth = static_cast<unsigned char>( alpha * a.z() + beta * b.z() + gamma * c.z() );
+				unsigned char depth = static_cast<unsigned char>( 
+					alpha * a.z() + beta * b.z() + gamma * c.z() 
+				);
 
 				if ( depth <= m_depthbuffer.Get( x, y ) )
 					continue;
@@ -183,10 +186,10 @@ namespace Rasterizer::Graphics
 		float left = min( min( screen[0].x(), screen[1].x() ), screen[2].x() );
 		float right = max( max( screen[0].x(), screen[1].x() ), screen[2].x() );
 
-		top = max( 0, top );
-		bottom = min( Renderer::ScreenHeight - 1, bottom );
-		left = max( 0, left );
-		right = min( Renderer::ScreenWidth - 1, right );
+		top = std::floor(max( 0, top )); 
+		bottom = std::ceil(min( Renderer::ScreenHeight - 1, bottom ));
+		left = std::floor(max( 0, left ));
+		right = std::ceil(min( Renderer::ScreenWidth - 1, right ));
 
 		Mat3 ABC = {
 			screen[0].x(), screen[1].x(), screen[2].x(),
@@ -196,7 +199,7 @@ namespace Rasterizer::Graphics
 
 		// backface culling and removal of tiny triangles
 		float determinant = ABC.Determinant();
-		if ( std::abs( determinant ) <= 0 )
+		if ( std::abs( determinant ) <= 1 )
 			return;
 
 		Mat3 ABCinv = ABC.Inversed( determinant );
@@ -207,18 +210,21 @@ namespace Rasterizer::Graphics
 			for ( int x = (int)left; x <= right; x++ )
 			{
 				// barycentric coordinates of {x,y}
-				Vec3 baryCoords = ABCinv * Vec3( static_cast<double>( x ), static_cast<double>( y ), 1.0f ); 
-				if ( baryCoords.x() < 0 || baryCoords.y() < 0 || baryCoords.z() < 0 ) 
+				Vec3 bcScreen = ABCinv * Vec3( static_cast<double>( x ) + 0.5f, static_cast<double>( y ) + 0.5f, 1.0f ); 
+				if ( bcScreen.x() < 0 || bcScreen.y() < 0 || bcScreen.z() < 0 ) 
 					continue;   
 
+				Vec3 bcClip( bcScreen.x() / tri.vertices[0].w(), bcScreen.y() / tri.vertices[1].w(), bcScreen.z() / tri.vertices[2].w() );
+				bcClip = bcClip / ( bcClip.x() + bcClip.y() + bcClip.z() );
+
 				// depth calculation and testing
-				double depth = baryCoords.Dot( Vec3( ndc[0].z(), ndc[1].z(), ndc[2].z() ) );
+				double depth = bcScreen.Dot( Vec3( ndc[0].z(), ndc[1].z(), ndc[2].z() ) );
 
 				if ( depth <= m_depthbuffer.Get( x, y ) )
 					continue;
 
 				// fragment shader
-				auto [discard, color] = shader.fragment( baryCoords );
+				auto [discard, color] = shader.fragment( bcClip );
 				if ( discard )
 					continue;
 
@@ -270,29 +276,19 @@ namespace Rasterizer::Graphics
 		for ( int i = 0; i < model.FaceCount(); i++ )
 		{
 			std::array<Vec4, 3> clip;
-			std::array<Vec4, 3> normals;
 
 			for ( int j : { 0, 1, 2 } )
 			{
 				clip[j] = shader.vertex( i, j );
 			}
 
-			//Rasterize( clip, colour );
-			//auto clippedTriangles = ClipTriangleNearPlane( clip );
-
-			Shapes::Triangle tri( clip, normals, colour, Vec4( model.GetFaceNormal( i ), 0.0f ) );
+			Shapes::Triangle tri( clip );
 
 			Rasterize( tri, shader );
-
-			//for ( const auto& tri : clippedTriangles )
-			//{
-			//	//Rasterize( tri, colour );
-			//	
-			//	//Rasterize( tri, col );
-			//}
 		}
 	}
 
+	// old screen space transform, before matrices
 	Vei3 Renderer::Project( const Vec3& v ) const
 	{
 		// from [-1, 1], to [0, ScreenWidth/ScreenHeight)
@@ -307,18 +303,18 @@ namespace Rasterizer::Graphics
 		int y = (int) ( ( v.y() ) * scale + offsetY );
 		int z = (int) ( ( v.z() + 1.0f ) * 255 * 0.5f ); // mapped to [0,255]
 
-		// std::cout << "Original: " << v.x << ", " << v.y << " Projection: " << x << ", " << y << std::endl;
-
 		// ScreenHeight - y because of inverted y direction
 		return Vei3( x, ScreenHeight - 1 - y, z );
 	}
 
+	// old perspective function, before matrices
 	Vec3 Renderer::Perspective( const Vec3& v ) const
 	{
 		constexpr float c = 10.0f;
 		return v / ( 1 - v.z() / c );
 	}
 
+	// simple rotate function utilising a matrix
 	Vec3 Renderer::Rotate( const Vec3& v, float theta ) const
 	{
 		Mat3 Ry = {
@@ -330,6 +326,7 @@ namespace Rasterizer::Graphics
 		return Ry * v;
 	}
 
+	// for scanline rasterisation
 	int Renderer::Intersect( Vei2 v0, Vei2 v1, int step ) const
 	{
 		float t = (float)( step - v0.y() ) / ( v1.y() - v0.y() ); // [0,1]
@@ -338,13 +335,15 @@ namespace Rasterizer::Graphics
 		return (int)x;
 	}
 
+	// initial function to visualise the depthbuffer, 
+	// back then depth buffer used unsigned char to store values
 	void Renderer::VisualizeDepth()
 	{
 		for ( int y = 0; y < m_depthbuffer.GetHeigth(); y++ )
 		{
 			for ( int x = 0; x < m_depthbuffer.GetWidth(); x++ )
 			{
-				//m_framebuffer.PutPixel( x, y, Colors::Grayscale( m_depthbuffer.Get( x, y ) ) );
+				// m_framebuffer.PutPixel( x, y, Colors::Grayscale( m_depthbuffer.Get( x, y ) ) );
 			}
 		}
 	}
@@ -356,7 +355,6 @@ namespace Rasterizer::Graphics
 		const Vec4& v2 = tri[2];
 
 		auto inside = []( const Vec4& v ) { return v.z() <= v.w(); };
-		//auto inside = []( const Vec4& v ) { return v.z() + v.w() >= 0.0; };
 
 		bool in0 = inside( v0 );
 		bool in1 = inside( v1 );
